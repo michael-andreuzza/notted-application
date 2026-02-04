@@ -48,16 +48,16 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             left: CARD_MARGIN_X,
             right: CARD_MARGIN_X,
             backgroundColor: isDark ? "#1A1A1A" : "#FFFFFF",
-            borderRadius: 24,
-            padding: 24,
+            borderRadius: 20,
+            padding: 20,
           }}
         >
           {/* Title */}
           <Text
             style={{
-              fontSize: 28,
+              fontSize: 20,
               color: theme.foreground,
-              marginBottom: 8,
+              marginBottom: 4,
               ...fonts.regular,
             }}
           >
@@ -67,10 +67,10 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
           {/* Subtitle */}
           <Text
             style={{
-              fontSize: 16,
+              fontSize: 14,
               color: theme.foreground,
               opacity: 0.5,
-              marginBottom: 32,
+              marginBottom: 20,
               ...fonts.regular,
             }}
           >
@@ -78,7 +78,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
           </Text>
 
           {/* Features */}
-          <View style={{ marginBottom: 32, gap: 16 }}>
+          <View style={{ marginBottom: 20, gap: 12 }}>
             <FeatureRow
               title="Unlimited Notes"
               description="Create as many lists as you need"
@@ -99,11 +99,10 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
           {/* Price box */}
           <View
             style={{
-              borderWidth: 1,
-              borderColor: isDark ? "#333" : "#E5E5E5",
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 24,
+              backgroundColor: isDark ? "#222" : "#F5F5F5",
+              borderRadius: 10,
+              padding: 14,
+              marginBottom: 16,
             }}
           >
             <View
@@ -115,7 +114,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             >
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: 14,
                   color: theme.foreground,
                   ...fonts.regular,
                 }}
@@ -124,7 +123,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
               </Text>
               <Text
                 style={{
-                  fontSize: 24,
+                  fontSize: 20,
                   color: theme.foreground,
                   ...fonts.regular,
                 }}
@@ -132,17 +131,6 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                 $4.99
               </Text>
             </View>
-            <Text
-              style={{
-                fontSize: 13,
-                color: theme.foreground,
-                opacity: 0.4,
-                marginTop: 4,
-                ...fonts.regular,
-              }}
-            >
-              One-time payment, no subscription
-            </Text>
           </View>
 
           {/* Purchase button */}
@@ -150,16 +138,16 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             onPress={handlePurchase}
             style={{
               backgroundColor: theme.foreground,
-              paddingVertical: 16,
-              borderRadius: 28,
+              paddingVertical: 14,
+              borderRadius: 24,
               alignItems: "center",
-              marginBottom: 12,
+              marginBottom: 8,
             }}
           >
             <Text
               style={{
                 color: theme.background,
-                fontSize: 16,
+                fontSize: 15,
                 ...fonts.regular,
               }}
             >
@@ -173,7 +161,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
               style={{
                 color: theme.foreground,
                 opacity: 0.4,
-                fontSize: 14,
+                fontSize: 13,
                 ...fonts.regular,
               }}
             >
@@ -199,7 +187,7 @@ function FeatureRow({
     <View>
       <Text
         style={{
-          fontSize: 16,
+          fontSize: 14,
           color: theme.foreground,
           ...fonts.regular,
         }}
@@ -208,7 +196,7 @@ function FeatureRow({
       </Text>
       <Text
         style={{
-          fontSize: 14,
+          fontSize: 12,
           color: theme.foreground,
           opacity: 0.4,
           marginTop: 2,
