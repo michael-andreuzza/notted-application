@@ -107,9 +107,10 @@ export function ChecklistItem({
           style={{
             flex: 1,
             fontSize: 16,
-            color: theme.foreground,
+            color: item.checked 
+              ? (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.25)")
+              : (isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)"),
             padding: 0,
-            opacity: item.checked ? 0.3 : 0.7,
             textDecorationLine: item.checked ? "line-through" : "none",
             outlineStyle: "none",
             textTransform: "capitalize",
@@ -121,8 +122,9 @@ export function ChecklistItem({
           <Text
             style={{
               fontSize: 16,
-              color: theme.foreground,
-              opacity: item.checked ? 0.3 : 0.7,
+              color: item.checked 
+                ? (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.25)")
+                : (isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)"),
               textDecorationLine: item.checked ? "line-through" : "none",
               textTransform: "capitalize",
               ...fonts.regular,

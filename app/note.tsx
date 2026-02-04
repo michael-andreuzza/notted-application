@@ -339,8 +339,7 @@ export default function NoteScreen() {
                 style={{
                   flex: 1,
                   fontSize: 16,
-                  color: theme.foreground,
-                  opacity: 0.7,
+                  color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
                   padding: 0,
                   outlineStyle: "none",
                   ...fonts.regular,
@@ -377,9 +376,9 @@ export default function NoteScreen() {
               // @ts-ignore - web only
               style={{
                 flex: 1,
-                fontSize: 18,
-                color: theme.foreground,
-                lineHeight: 26,
+                fontSize: 16,
+                color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
+                lineHeight: 24,
                 minHeight: 300,
                 outlineStyle: "none",
                 ...fonts.regular,
