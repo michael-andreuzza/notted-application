@@ -83,18 +83,19 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          {/* Settings */}
-          <Pressable onPress={() => setShowSettings(true)}>
-            <Text
-              style={{
-                fontSize: 16,
-                color: theme.foreground,
-                opacity: 0.6,
-                ...fonts.regular,
-              }}
-            >
-              Settings
-            </Text>
+          {/* Settings - 3 dots icon */}
+          <Pressable
+            onPress={() => setShowSettings(true)}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: isDark ? "#222" : "#F0F0F0",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <MoreIcon color={theme.foreground} size={20} />
           </Pressable>
         </View>
 
