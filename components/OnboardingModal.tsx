@@ -2,6 +2,10 @@ import React from "react";
 import { View, Text, Pressable, Modal, TouchableWithoutFeedback } from "react-native";
 import { fonts } from "@/constants/theme";
 import { useAppTheme } from "@/hooks/useAppTheme";
+import { PlusIcon } from "@/components/icons/PlusIcon";
+import { CheckIcon } from "@/components/icons/CheckIcon";
+import { ArrowDownIcon } from "@/components/icons/ArrowDownIcon";
+import { ShakeIcon } from "@/components/icons/ShakeIcon";
 
 const CARD_MARGIN_X = 12;
 const CARD_MARGIN_BOTTOM = 12;
@@ -51,22 +55,22 @@ export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
               {/* Tips */}
               <View style={{ gap: 20, marginBottom: 32 }}>
                 <TipRow
-                  emoji="+"
+                  icon={<PlusIcon color={theme.foreground} size={18} />}
                   text="Tap + to create a note"
                   theme={theme}
                 />
                 <TipRow
-                  emoji="✓"
+                  icon={<CheckIcon color={theme.foreground} size={18} />}
                   text="Tap checkbox to mark done"
                   theme={theme}
                 />
                 <TipRow
-                  emoji="↓"
+                  icon={<ArrowDownIcon color={theme.foreground} size={18} />}
                   text="Checked items move to bottom"
                   theme={theme}
                 />
                 <TipRow
-                  emoji="📱"
+                  icon={<ShakeIcon color={theme.foreground} size={18} />}
                   text="Shake to clear checked items"
                   theme={theme}
                 />
@@ -104,26 +108,19 @@ export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
 }
 
 function TipRow({
-  emoji,
+  icon,
   text,
   theme,
 }: {
-  emoji: string;
+  icon: React.ReactNode;
   text: string;
   theme: { foreground: string; background: string };
 }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <Text
-        style={{
-          fontSize: 18,
-          color: theme.foreground,
-          width: 32,
-          ...fonts.regular,
-        }}
-      >
-        {emoji}
-      </Text>
+      <View style={{ width: 32 }}>
+        {icon}
+      </View>
       <Text
         style={{
           fontSize: 16,
