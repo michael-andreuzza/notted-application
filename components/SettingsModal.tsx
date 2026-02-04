@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, useColorScheme, Modal, Alert, Platform } from "react-native";
+import { View, Text, Pressable, useColorScheme, Modal, ScrollView } from "react-native";
 import { colors, fonts } from "@/constants/theme";
 import { useNoteStore, ThemeMode } from "@/stores/noteStore";
 
@@ -50,272 +50,277 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
             left: CARD_MARGIN_X,
             right: CARD_MARGIN_X,
             backgroundColor: isDark ? "#1A1A1A" : "#FFFFFF",
-            borderRadius: 24,
-            padding: 24,
+            borderRadius: 20,
+            padding: 20,
+            maxHeight: "70%",
           }}
         >
-          {/* Title */}
-          <Text
-            style={{
-              fontSize: 28,
-              color: theme.foreground,
-              marginBottom: 32,
-              ...fonts.regular,
-            }}
-          >
-            Settings
-          </Text>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {/* Title */}
+            <Text
+              style={{
+                fontSize: 20,
+                color: theme.foreground,
+                marginBottom: 20,
+                ...fonts.regular,
+              }}
+            >
+              Settings
+            </Text>
 
-          {/* Theme Section */}
-          <Text
-            style={{
-              fontSize: 14,
-              color: theme.foreground,
-              opacity: 0.4,
-              marginBottom: 16,
-              ...fonts.regular,
-            }}
-          >
-            Theme
-          </Text>
+            {/* Theme Section */}
+            <Text
+              style={{
+                fontSize: 12,
+                color: theme.foreground,
+                opacity: 0.4,
+                marginBottom: 8,
+                ...fonts.regular,
+              }}
+            >
+              Theme
+            </Text>
 
-          <View style={{ gap: 8, marginBottom: 32 }}>
-            {themeOptions.map((option) => (
-              <Pressable
-                key={option.value}
-                onPress={() => setThemeMode(option.value)}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  paddingVertical: 12,
-                  paddingHorizontal: 16,
-                  borderRadius: 12,
-                  backgroundColor:
-                    themeMode === option.value
-                      ? isDark
-                        ? "#222"
-                        : "#F0F0F0"
-                      : "transparent",
-                }}
-              >
-                <Text
+            <View style={{ gap: 4, marginBottom: 20 }}>
+              {themeOptions.map((option) => (
+                <Pressable
+                  key={option.value}
+                  onPress={() => setThemeMode(option.value)}
                   style={{
-                    fontSize: 16,
-                    color: theme.foreground,
-                    ...fonts.regular,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    paddingVertical: 10,
+                    paddingHorizontal: 12,
+                    borderRadius: 10,
+                    backgroundColor:
+                      themeMode === option.value
+                        ? isDark
+                          ? "#222"
+                          : "#F0F0F0"
+                        : "transparent",
                   }}
                 >
-                  {option.label}
-                </Text>
-                {themeMode === option.value && (
                   <Text
                     style={{
-                      fontSize: 16,
+                      fontSize: 15,
                       color: theme.foreground,
                       ...fonts.regular,
                     }}
                   >
-                    ✓
+                    {option.label}
                   </Text>
-                )}
-              </Pressable>
-            ))}
-          </View>
-
-          {/* Vibration Section */}
-          <Text
-            style={{
-              fontSize: 14,
-              color: theme.foreground,
-              opacity: 0.4,
-              marginBottom: 16,
-              ...fonts.regular,
-            }}
-          >
-            Feedback
-          </Text>
-
-          <Pressable
-            onPress={() => setHapticsEnabled(!hapticsEnabled)}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              borderRadius: 12,
-              backgroundColor: hapticsEnabled
-                ? isDark
-                  ? "#222"
-                  : "#F0F0F0"
-                : "transparent",
-              marginBottom: 8,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                color: theme.foreground,
-                ...fonts.regular,
-              }}
-            >
-              Vibration
-            </Text>
-            {hapticsEnabled && (
-              <Text
-                style={{
-                  fontSize: 16,
-                  color: theme.foreground,
-                  ...fonts.regular,
-                }}
-              >
-                ✓
-              </Text>
-            )}
-          </Pressable>
-
-          <Pressable
-            onPress={() => setShakeToClearEnabled(!shakeToClearEnabled)}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              borderRadius: 12,
-              backgroundColor: shakeToClearEnabled
-                ? isDark
-                  ? "#222"
-                  : "#F0F0F0"
-                : "transparent",
-              marginBottom: 32,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                color: theme.foreground,
-                ...fonts.regular,
-              }}
-            >
-              Shake to clear
-            </Text>
-            {shakeToClearEnabled && (
-              <Text
-                style={{
-                  fontSize: 16,
-                  color: theme.foreground,
-                  ...fonts.regular,
-                }}
-              >
-                ✓
-              </Text>
-            )}
-          </Pressable>
-
-          <Pressable
-            onPress={() => {
-              setHasSeenOnboarding(false);
-              onClose();
-            }}
-            style={{
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              borderRadius: 12,
-              marginBottom: 32,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                color: theme.foreground,
-                ...fonts.regular,
-              }}
-            >
-              Show Onboarding
-            </Text>
-          </Pressable>
-
-          {/* Delete Data Section */}
-          <Text
-            style={{
-              fontSize: 14,
-              color: theme.foreground,
-              opacity: 0.4,
-              marginBottom: 16,
-              ...fonts.regular,
-            }}
-          >
-            Data
-          </Text>
-
-          {!showDeleteConfirm ? (
-            <Pressable
-              onPress={() => setShowDeleteConfirm(true)}
-              style={{
-                paddingVertical: 12,
-                marginBottom: 32,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 16,
-                  color: "#FF4444",
-                  ...fonts.regular,
-                }}
-              >
-                Delete All Data
-              </Text>
-            </Pressable>
-          ) : (
-            <View style={{ marginBottom: 32 }}>
-              <Text
-                style={{
-                  fontSize: 14,
-                  color: theme.foreground,
-                  opacity: 0.6,
-                  marginBottom: 16,
-                  ...fonts.regular,
-                }}
-              >
-                This will delete all your notes permanently.
-              </Text>
-              <View style={{ flexDirection: "row", gap: 24 }}>
-                <Pressable onPress={() => setShowDeleteConfirm(false)}>
-                  <Text style={{ color: theme.foreground, fontSize: 16, ...fonts.regular }}>
-                    Cancel
-                  </Text>
+                  {themeMode === option.value && (
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        color: theme.foreground,
+                        ...fonts.regular,
+                      }}
+                    >
+                      ✓
+                    </Text>
+                  )}
                 </Pressable>
-                <Pressable
-                  onPress={() => {
-                    resetAllData();
-                    setShowDeleteConfirm(false);
-                    onClose();
+              ))}
+            </View>
+
+            {/* Feedback Section */}
+            <Text
+              style={{
+                fontSize: 12,
+                color: theme.foreground,
+                opacity: 0.4,
+                marginBottom: 8,
+                ...fonts.regular,
+              }}
+            >
+              Feedback
+            </Text>
+
+            <Pressable
+              onPress={() => setHapticsEnabled(!hapticsEnabled)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingVertical: 10,
+                paddingHorizontal: 12,
+                borderRadius: 10,
+                backgroundColor: hapticsEnabled
+                  ? isDark
+                    ? "#222"
+                    : "#F0F0F0"
+                  : "transparent",
+                marginBottom: 4,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 15,
+                  color: theme.foreground,
+                  ...fonts.regular,
+                }}
+              >
+                Vibration
+              </Text>
+              {hapticsEnabled && (
+                <Text
+                  style={{
+                    fontSize: 15,
+                    color: theme.foreground,
+                    ...fonts.regular,
                   }}
                 >
-                  <Text style={{ color: "#FF4444", fontSize: 16, ...fonts.regular }}>
-                    Delete
-                  </Text>
-                </Pressable>
+                  ✓
+                </Text>
+              )}
+            </Pressable>
+
+            <Pressable
+              onPress={() => setShakeToClearEnabled(!shakeToClearEnabled)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingVertical: 10,
+                paddingHorizontal: 12,
+                borderRadius: 10,
+                backgroundColor: shakeToClearEnabled
+                  ? isDark
+                    ? "#222"
+                    : "#F0F0F0"
+                  : "transparent",
+                marginBottom: 20,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 15,
+                  color: theme.foreground,
+                  ...fonts.regular,
+                }}
+              >
+                Shake to clear
+              </Text>
+              {shakeToClearEnabled && (
+                <Text
+                  style={{
+                    fontSize: 15,
+                    color: theme.foreground,
+                    ...fonts.regular,
+                  }}
+                >
+                  ✓
+                </Text>
+              )}
+            </Pressable>
+
+            {/* Other options */}
+            <Pressable
+              onPress={() => {
+                setHasSeenOnboarding(false);
+                onClose();
+              }}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 12,
+                marginBottom: 20,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 15,
+                  color: theme.foreground,
+                  ...fonts.regular,
+                }}
+              >
+                Show Onboarding
+              </Text>
+            </Pressable>
+
+            {/* Delete Data Section */}
+            <Text
+              style={{
+                fontSize: 12,
+                color: theme.foreground,
+                opacity: 0.4,
+                marginBottom: 8,
+                ...fonts.regular,
+              }}
+            >
+              Data
+            </Text>
+
+            {!showDeleteConfirm ? (
+              <Pressable
+                onPress={() => setShowDeleteConfirm(true)}
+                style={{
+                  paddingVertical: 10,
+                  paddingHorizontal: 12,
+                  marginBottom: 20,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 15,
+                    color: "#FF4444",
+                    ...fonts.regular,
+                  }}
+                >
+                  Delete All Data
+                </Text>
+              </Pressable>
+            ) : (
+              <View style={{ marginBottom: 20, paddingHorizontal: 12 }}>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: theme.foreground,
+                    opacity: 0.6,
+                    marginBottom: 12,
+                    ...fonts.regular,
+                  }}
+                >
+                  This will delete all your notes permanently.
+                </Text>
+                <View style={{ flexDirection: "row", gap: 20 }}>
+                  <Pressable onPress={() => setShowDeleteConfirm(false)}>
+                    <Text style={{ color: theme.foreground, fontSize: 15, ...fonts.regular }}>
+                      Cancel
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      resetAllData();
+                      setShowDeleteConfirm(false);
+                      onClose();
+                    }}
+                  >
+                    <Text style={{ color: "#FF4444", fontSize: 15, ...fonts.regular }}>
+                      Delete
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
-            </View>
-          )}
+            )}
+          </ScrollView>
 
           {/* Done button */}
           <Pressable
             onPress={onClose}
             style={{
               backgroundColor: theme.foreground,
-              paddingVertical: 16,
-              borderRadius: 28,
+              paddingVertical: 14,
+              borderRadius: 24,
               alignItems: "center",
+              marginTop: 8,
             }}
           >
             <Text
               style={{
                 color: theme.background,
-                fontSize: 16,
+                fontSize: 15,
                 ...fonts.regular,
               }}
             >
