@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, Pressable, useColorScheme, Modal, ScrollView } from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import { View, Text, Pressable, useColorScheme, Modal, ScrollView, Animated } from "react-native";
 import { colors, fonts } from "@/constants/theme";
 import { useNoteStore, ThemeMode } from "@/stores/noteStore";
 import { CloseIcon } from "@/components/icons/CloseIcon";
@@ -28,6 +28,19 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
     { value: "light", label: "Light" },
     { value: "dark", label: "Dark" },
   ];
+
+  // Theme tab animation - 0 = system, 1 = light, 2 = dark
+  const themeIndex = themeMode === "system" ? 0 : themeMode === "light" ? 1 : 2;
+  const themeAnimation = useRef(new Animated.Value(themeIndex)).current;
+
+  useEffect(() => {
+    Animated.spring(themeAnimation, {
+      toValue: themeIndex,
+      useNativeDriver: false,
+      tension: 100,
+      friction: 12,
+    }).start();
+  }, [themeMode]);
 
   return (
     <Modal
@@ -99,40 +112,44 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
             <View
               style={{
                 flexDirection: "row",
-                backgroundColor: isDark ? "#222" : "#F0F0F0",
-                borderRadius: 10,
-                padding: 4,
+                gap: 8,
                 marginBottom: 20,
               }}
             >
-              {themeOptions.map((option) => (
-                <Pressable
+              {themeOptions.map((option, index) => (
+                <Animated.View
                   key={option.value}
-                  onPress={() => setThemeMode(option.value)}
                   style={{
-                    flex: 1,
-                    paddingVertical: 8,
-                    borderRadius: 8,
-                    alignItems: "center",
-                    backgroundColor:
-                      themeMode === option.value
-                        ? isDark
-                          ? "#333"
-                          : "#FFFFFF"
-                        : "transparent",
+                    flex: themeAnimation.interpolate({
+                      inputRange: [0, 1, 2],
+                      outputRange: index === 0 ? [2, 1, 1] : index === 1 ? [1, 2, 1] : [1, 1, 2],
+                    }),
                   }}
                 >
-                  <Text
+                  <Pressable
+                    onPress={() => setThemeMode(option.value)}
                     style={{
-                      fontSize: 14,
-                      color: theme.foreground,
-                      opacity: themeMode === option.value ? 1 : 0.5,
-                      ...fonts.regular,
+                      paddingVertical: 10,
+                      paddingHorizontal: 16,
+                      borderRadius: 20,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      backgroundColor: isDark ? "#222" : "#F0F0F0",
                     }}
                   >
-                    {option.label}
-                  </Text>
-                </Pressable>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        color: theme.foreground,
+                        opacity: themeMode === option.value ? 1 : 0.5,
+                        ...fonts.medium,
+                      }}
+                    >
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                </Animated.View>
               ))}
             </View>
 

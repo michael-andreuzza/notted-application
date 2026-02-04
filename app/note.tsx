@@ -7,6 +7,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Animated,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Accelerometer } from "expo-sensors";
@@ -58,6 +59,21 @@ export default function NoteScreen() {
   const newItemInputRef = useRef<TextInput>(null);
   const textContentRef = useRef<TextInput>(null);
   const lastShakeTime = useRef(0);
+
+  // Tab animation - 0 = list active, 1 = text active
+  const tabAnimation = useRef(new Animated.Value(note?.mode === "text" ? 1 : 0)).current;
+
+  // Animate tabs when mode changes
+  useEffect(() => {
+    if (note) {
+      Animated.spring(tabAnimation, {
+        toValue: note.mode === "text" ? 1 : 0,
+        useNativeDriver: false,
+        tension: 100,
+        friction: 12,
+      }).start();
+    }
+  }, [note?.mode]);
 
   // Removed auto-focus - let users view notes without keyboard popping up
   // They can tap on the input field when they want to type
@@ -232,28 +248,56 @@ export default function NoteScreen() {
       keyboardVerticalOffset={0}
     >
       <View style={{ flex: 1, paddingTop: 50 }}>
-        {/* Top Navigation */}
+        {/* Top Navigation - 3 column grid */}
         <View
           style={{
             flexDirection: "row",
-            justifyContent: "space-between",
             alignItems: "center",
             paddingHorizontal: 16,
             paddingVertical: 8,
             marginBottom: 16,
           }}
         >
-          {/* Back Button */}
-          <Pressable
-            onPress={() => router.replace("/")}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          >
-            <ArrowLeftIcon color={theme.foreground} size={24} />
-          </Pressable>
+          {/* Left column */}
+          <View style={{ width: 80, alignItems: "flex-start" }}>
+            <Pressable
+              onPress={() => router.replace("/")}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <ArrowLeftIcon color={theme.foreground} size={24} />
+            </Pressable>
+          </View>
 
-          {/* Right actions */}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-            {/* Delete */}
+          {/* Center column - Title */}
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "center", marginHorizontal: 8 }}>
+            <TextInput
+              value={note.title}
+              onChangeText={(text) => {
+                // Always capitalize first letter
+                const capitalized = text.charAt(0).toUpperCase() + text.slice(1);
+                updateNoteTitle(note.id, capitalized);
+              }}
+              placeholder="Note title..."
+              placeholderTextColor={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"}
+              textAlign="center"
+              autoCapitalize="sentences"
+              numberOfLines={1}
+              maxLength={20}
+              // @ts-ignore - web only
+              style={{
+                fontSize: 20,
+                color: theme.foreground,
+                padding: 0,
+                outlineStyle: "none",
+                textAlign: "center",
+                maxWidth: 120,
+                ...fonts.medium,
+              }}
+            />
+          </View>
+
+          {/* Right column */}
+          <View style={{ width: 80, flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 16 }}>
             <Pressable onPress={() => setShowDeleteConfirm(true)}>
               <Text
                 style={{
@@ -266,7 +310,6 @@ export default function NoteScreen() {
               </Text>
             </Pressable>
 
-            {/* Settings - 3 dots icon */}
             <Pressable
               onPress={() => setShowSettings(true)}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
@@ -276,109 +319,101 @@ export default function NoteScreen() {
           </View>
         </View>
 
-        {/* Header - note title */}
-        <View style={{ paddingHorizontal: 24, marginBottom: 16 }}>
-          <TextInput
-            value={note.title}
-            onChangeText={(text) => updateNoteTitle(note.id, text)}
-            placeholder="note title..."
-            placeholderTextColor={isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}
-            // @ts-ignore - web only
-            style={{
-              fontSize: 20,
-              color: theme.foreground,
-              padding: 0,
-              outlineStyle: "none",
-              ...fonts.regular,
-            }}
-          />
-        </View>
-
-        {/* Mode toggle */}
+        {/* Mode toggle - separate pills with animation */}
         <View
           style={{
             flexDirection: "row",
             marginHorizontal: 24,
             marginBottom: 24,
-            backgroundColor: isDark ? "#1A1A1A" : "#F0F0F0",
-            borderRadius: 10,
-            padding: 4,
+            gap: 8,
           }}
         >
-          <Pressable 
-            onPress={() => setNoteMode(note.id, "list")} 
-            style={{ 
-              flex: 1,
-              flexDirection: "row", 
-              alignItems: "center",
-              justifyContent: "center",
-              paddingVertical: 10,
-              borderRadius: 8,
-              backgroundColor: note.mode === "list" 
-                ? isDark ? "#333" : "#FFFFFF" 
-                : "transparent",
+          <Animated.View
+            style={{
+              flex: tabAnimation.interpolate({
+                inputRange: [0, 1],
+                outputRange: [2, 1],
+              }),
             }}
           >
-            <Text
-              style={{
-                fontSize: 15,
-                color: theme.foreground,
-                opacity: note.mode === "list" ? 1 : 0.5,
-                ...fonts.regular,
+            <Pressable 
+              onPress={() => setNoteMode(note.id, "list")} 
+              style={{ 
+                flexDirection: "row", 
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingVertical: 10,
+                paddingHorizontal: 16,
+                borderRadius: 20,
+                backgroundColor: isDark ? "#1A1A1A" : "#F0F0F0",
               }}
             >
-              List
-            </Text>
-            {note.items.length > 0 && (
-              <View
+              <Text
                 style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: 3,
-                  backgroundColor: theme.foreground,
-                  opacity: note.mode === "list" ? 1 : 0.4,
-                  marginLeft: 8,
+                  fontSize: 15,
+                  color: theme.foreground,
+                  opacity: note.mode === "list" ? 1 : 0.5,
+                  ...fonts.medium,
                 }}
-              />
-            )}
-          </Pressable>
-          <Pressable 
-            onPress={() => setNoteMode(note.id, "text")} 
-            style={{ 
-              flex: 1,
-              flexDirection: "row", 
-              alignItems: "center",
-              justifyContent: "center",
-              paddingVertical: 10,
-              borderRadius: 8,
-              backgroundColor: note.mode === "text" 
-                ? isDark ? "#333" : "#FFFFFF" 
-                : "transparent",
+              >
+                List
+              </Text>
+              {note.items.length > 0 && (
+                <View
+                  style={{
+                    width: 5,
+                    height: 5,
+                    borderRadius: 3,
+                    backgroundColor: theme.foreground,
+                    opacity: note.mode === "list" ? 1 : 0.4,
+                  }}
+                />
+              )}
+            </Pressable>
+          </Animated.View>
+          <Animated.View
+            style={{
+              flex: tabAnimation.interpolate({
+                inputRange: [0, 1],
+                outputRange: [1, 2],
+              }),
             }}
           >
-            <Text
-              style={{
-                fontSize: 15,
-                color: theme.foreground,
-                opacity: note.mode === "text" ? 1 : 0.5,
-                ...fonts.regular,
+            <Pressable 
+              onPress={() => setNoteMode(note.id, "text")} 
+              style={{ 
+                flexDirection: "row", 
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingVertical: 10,
+                paddingHorizontal: 16,
+                borderRadius: 20,
+                backgroundColor: isDark ? "#1A1A1A" : "#F0F0F0",
               }}
             >
-              Text
-            </Text>
-            {note.textContent.trim().length > 0 && (
-              <View
+              <Text
                 style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: 3,
-                  backgroundColor: theme.foreground,
-                  opacity: note.mode === "text" ? 1 : 0.4,
-                  marginLeft: 8,
+                  fontSize: 15,
+                  color: theme.foreground,
+                  opacity: note.mode === "text" ? 1 : 0.5,
+                  ...fonts.medium,
                 }}
-              />
-            )}
-          </Pressable>
+              >
+                Text
+              </Text>
+              {note.textContent.trim().length > 0 && (
+                <View
+                  style={{
+                    width: 5,
+                    height: 5,
+                    borderRadius: 3,
+                    backgroundColor: theme.foreground,
+                    opacity: note.mode === "text" ? 1 : 0.4,
+                  }}
+                />
+              )}
+            </Pressable>
+          </Animated.View>
         </View>
 
         {/* Content area */}

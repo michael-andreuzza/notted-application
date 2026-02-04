@@ -67,14 +67,14 @@ export default function HomeScreen() {
                 width: 16,
                 height: 16,
                 marginRight: 6,
-                opacity: isDark ? 0.5 : 0.4,
+                opacity: isDark ? 0.7 : 0.6,
               }}
               resizeMode="contain"
             />
             <Text
               style={{
                 fontSize: 16,
-                color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)",
+                color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
                 lineHeight: 16,
                 ...fonts.regular,
               }}
