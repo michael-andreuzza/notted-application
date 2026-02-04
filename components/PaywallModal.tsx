@@ -1,8 +1,10 @@
-import React from "react";
-import { View, Text, Pressable, Modal, Linking } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Pressable, Modal, Linking, TextInput, ActivityIndicator } from "react-native";
 import { fonts } from "@/constants/theme";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { CloseIcon } from "@/components/icons/CloseIcon";
+import { useNoteStore } from "@/stores/noteStore";
+import { RESTORE_ENDPOINT } from "@/constants/supabase";
 
 const POLAR_CHECKOUT_URL = "https://buy.polar.sh/polar_cl_qCd3hFE0efbUAbSDO16d4aCtF8BJzlGCRQf8u40mrSz";
 
@@ -16,6 +18,12 @@ interface PaywallModalProps {
 
 export function PaywallModal({ visible, onClose }: PaywallModalProps) {
   const { isDark, theme } = useAppTheme();
+  const { setPremium, purchaseEmail } = useNoteStore();
+  
+  const [showRestoreInput, setShowRestoreInput] = useState(false);
+  const [email, setEmail] = useState(purchaseEmail || "");
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreError, setRestoreError] = useState<string | null>(null);
 
   const handlePurchase = async () => {
     await Linking.openURL(POLAR_CHECKOUT_URL);
@@ -23,8 +31,43 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
   };
 
   const handleRestore = async () => {
-    // TODO: Implement restore purchases logic
-    alert("Restore purchases - will check with Polar API");
+    if (!email.trim()) {
+      setRestoreError("Please enter your email");
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setRestoreError("Please enter a valid email");
+      return;
+    }
+
+    setIsRestoring(true);
+    setRestoreError(null);
+
+    try {
+      const response = await fetch(`${RESTORE_ENDPOINT}?email=${encodeURIComponent(email.trim())}`);
+      const data = await response.json();
+
+      if (data.isPremium) {
+        setPremium(true, email.trim().toLowerCase());
+        onClose();
+      } else {
+        setRestoreError("No purchase found for this email");
+      }
+    } catch (error) {
+      console.error("Restore error:", error);
+      setRestoreError("Failed to restore. Please try again.");
+    } finally {
+      setIsRestoring(false);
+    }
+  };
+
+  const handleClose = () => {
+    setShowRestoreInput(false);
+    setRestoreError(null);
+    onClose();
   };
 
   return (
@@ -32,12 +75,12 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
       visible={visible}
       transparent
       animationType="slide"
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <View style={{ flex: 1 }}>
         {/* Tap outside to close */}
         <Pressable 
-          onPress={onClose} 
+          onPress={handleClose} 
           style={{ flex: 1 }} 
         />
 
@@ -55,7 +98,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
         >
           {/* Close button */}
           <Pressable
-            onPress={onClose}
+            onPress={handleClose}
             hitSlop={12}
             style={{
               position: "absolute",
@@ -170,19 +213,110 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             </Text>
           </Pressable>
 
-          {/* Restore */}
-          <Pressable onPress={handleRestore} style={{ alignItems: "center", paddingVertical: 8 }}>
-            <Text
-              style={{
-                color: theme.foreground,
-                opacity: 0.4,
-                fontSize: 13,
-                ...fonts.regular,
-              }}
+          {/* Restore section */}
+          {showRestoreInput ? (
+            <View style={{ marginTop: 8 }}>
+              <TextInput
+                value={email}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  setRestoreError(null);
+                }}
+                placeholder="Enter your purchase email"
+                placeholderTextColor={isDark ? "#666" : "#999"}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                style={{
+                  backgroundColor: isDark ? "#222" : "#F5F5F5",
+                  borderRadius: 10,
+                  padding: 14,
+                  color: theme.foreground,
+                  fontSize: 15,
+                  ...fonts.regular,
+                }}
+              />
+              {restoreError && (
+                <Text
+                  style={{
+                    color: "#FF4444",
+                    fontSize: 13,
+                    marginTop: 8,
+                    ...fonts.regular,
+                  }}
+                >
+                  {restoreError}
+                </Text>
+              )}
+              <View style={{ flexDirection: "row", gap: 12, marginTop: 12 }}>
+                <Pressable
+                  onPress={() => {
+                    setShowRestoreInput(false);
+                    setRestoreError(null);
+                  }}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 12,
+                    borderRadius: 20,
+                    alignItems: "center",
+                    backgroundColor: isDark ? "#222" : "#F5F5F5",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: theme.foreground,
+                      fontSize: 14,
+                      ...fonts.regular,
+                    }}
+                  >
+                    Cancel
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={handleRestore}
+                  disabled={isRestoring}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 12,
+                    borderRadius: 20,
+                    alignItems: "center",
+                    backgroundColor: theme.foreground,
+                    opacity: isRestoring ? 0.6 : 1,
+                  }}
+                >
+                  {isRestoring ? (
+                    <ActivityIndicator color={theme.background} size="small" />
+                  ) : (
+                    <Text
+                      style={{
+                        color: theme.background,
+                        fontSize: 14,
+                        ...fonts.regular,
+                      }}
+                    >
+                      Restore
+                    </Text>
+                  )}
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            <Pressable 
+              onPress={() => setShowRestoreInput(true)} 
+              style={{ alignItems: "center", paddingVertical: 8 }}
             >
-              Restore Purchase
-            </Text>
-          </Pressable>
+              <Text
+                style={{
+                  color: theme.foreground,
+                  opacity: 0.4,
+                  fontSize: 13,
+                  ...fonts.regular,
+                }}
+              >
+                Restore Purchase
+              </Text>
+            </Pressable>
+          )}
         </View>
       </View>
     </Modal>
