@@ -172,40 +172,44 @@ export default function HomeScreen() {
             </View>
           )}
 
-          {/* Premium Banner - show only if not premium and has at least 1 note */}
-          {!isPremium && notes.length >= 1 && (
-            <Pressable
-              onPress={() => setShowPaywall(true)}
+        </ScrollView>
+
+        {/* Premium Banner - fixed at bottom, show only if not premium and has at least 1 note */}
+        {!isPremium && notes.length >= 1 && (
+          <Pressable
+            onPress={() => setShowPaywall(true)}
+            style={{
+              position: "absolute",
+              bottom: 24,
+              left: 24,
+              right: 24,
+              padding: 16,
+              backgroundColor: isDark ? "#1A1A1A" : "#F5F5F5",
+              borderRadius: 12,
+            }}
+          >
+            <Text
               style={{
-                marginTop: 32,
-                padding: 16,
-                backgroundColor: isDark ? "#1A1A1A" : "#F5F5F5",
-                borderRadius: 12,
+                fontSize: 14,
+                color: theme.foreground,
+                ...fonts.regular,
               }}
             >
-              <Text
-                style={{
-                  fontSize: 14,
-                  color: theme.foreground,
-                  ...fonts.regular,
-                }}
-              >
-                Unlimited notes
-              </Text>
-              <Text
-                style={{
-                  fontSize: 13,
-                  color: theme.foreground,
-                  opacity: 0.5,
-                  marginTop: 4,
-                  ...fonts.regular,
-                }}
-              >
-                Upgrade for $4.99 — lifetime access
-              </Text>
-            </Pressable>
-          )}
-        </ScrollView>
+              Unlimited notes
+            </Text>
+            <Text
+              style={{
+                fontSize: 13,
+                color: theme.foreground,
+                opacity: 0.5,
+                marginTop: 4,
+                ...fonts.regular,
+              }}
+            >
+              Upgrade for $4.99 — lifetime access
+            </Text>
+          </Pressable>
+        )}
 
       </View>
 

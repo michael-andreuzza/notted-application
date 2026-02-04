@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, Pressable, useColorScheme, Modal, ScrollView } from "react-native";
 import { colors, fonts } from "@/constants/theme";
 import { useNoteStore, ThemeMode } from "@/stores/noteStore";
+import { CloseIcon } from "@/components/icons/CloseIcon";
 
 const CARD_MARGIN_X = 12;
 const CARD_MARGIN_BOTTOM = 12;
@@ -55,6 +56,20 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
             maxHeight: "70%",
           }}
         >
+          {/* Close button */}
+          <Pressable
+            onPress={onClose}
+            hitSlop={12}
+            style={{
+              position: "absolute",
+              top: 16,
+              right: 16,
+              zIndex: 1,
+            }}
+          >
+            <CloseIcon color={theme.foreground} size={20} />
+          </Pressable>
+
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Title */}
             <Text

@@ -6,6 +6,7 @@ import { PlusIcon } from "@/components/icons/PlusIcon";
 import { CheckIcon } from "@/components/icons/CheckIcon";
 import { ArrowDownIcon } from "@/components/icons/ArrowDownIcon";
 import { ShakeIcon } from "@/components/icons/ShakeIcon";
+import { CloseIcon } from "@/components/icons/CloseIcon";
 
 const CARD_MARGIN_X = 12;
 const CARD_MARGIN_BOTTOM = 12;
@@ -39,6 +40,20 @@ export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
                 padding: 20,
               }}
             >
+              {/* Close button */}
+              <Pressable
+                onPress={onClose}
+                hitSlop={12}
+                style={{
+                  position: "absolute",
+                  top: 16,
+                  right: 16,
+                  zIndex: 1,
+                }}
+              >
+                <CloseIcon color={theme.foreground} size={20} />
+              </Pressable>
+
               {/* Title */}
               <Text
                 style={{

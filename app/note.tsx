@@ -223,23 +223,37 @@ export default function NoteScreen() {
         <View
           style={{
             flexDirection: "row",
-            paddingHorizontal: 24,
+            marginHorizontal: 24,
             marginBottom: 24,
-            gap: 16,
-            borderBottomWidth: 1,
-            borderBottomColor: isDark ? "#222" : "#E5E5E5",
+            backgroundColor: isDark ? "#1A1A1A" : "#F0F0F0",
+            borderRadius: 10,
+            padding: 4,
           }}
         >
           <Pressable 
             onPress={() => setNoteMode(note.id, "list")} 
             style={{ 
+              flex: 1,
               flexDirection: "row", 
               alignItems: "center",
-              paddingBottom: 8,
-              borderBottomWidth: 2,
-              borderBottomColor: note.mode === "list" ? theme.foreground : "transparent",
+              justifyContent: "center",
+              paddingVertical: 10,
+              borderRadius: 8,
+              backgroundColor: note.mode === "list" 
+                ? isDark ? "#333" : "#FFFFFF" 
+                : "transparent",
             }}
           >
+            <Text
+              style={{
+                fontSize: 15,
+                color: theme.foreground,
+                opacity: note.mode === "list" ? 1 : 0.5,
+                ...fonts.regular,
+              }}
+            >
+              List
+            </Text>
             {note.items.length > 0 && (
               <View
                 style={{
@@ -247,32 +261,36 @@ export default function NoteScreen() {
                   height: 5,
                   borderRadius: 3,
                   backgroundColor: theme.foreground,
-                  opacity: note.mode === "list" ? 1 : 0.3,
-                  marginRight: 8,
+                  opacity: note.mode === "list" ? 1 : 0.4,
+                  marginLeft: 8,
                 }}
               />
             )}
-            <Text
-              style={{
-                fontSize: 20,
-                color: theme.foreground,
-                opacity: note.mode === "list" ? 1 : 0.3,
-                ...fonts.regular,
-              }}
-            >
-              List
-            </Text>
           </Pressable>
           <Pressable 
             onPress={() => setNoteMode(note.id, "text")} 
             style={{ 
+              flex: 1,
               flexDirection: "row", 
               alignItems: "center",
-              paddingBottom: 8,
-              borderBottomWidth: 2,
-              borderBottomColor: note.mode === "text" ? theme.foreground : "transparent",
+              justifyContent: "center",
+              paddingVertical: 10,
+              borderRadius: 8,
+              backgroundColor: note.mode === "text" 
+                ? isDark ? "#333" : "#FFFFFF" 
+                : "transparent",
             }}
           >
+            <Text
+              style={{
+                fontSize: 15,
+                color: theme.foreground,
+                opacity: note.mode === "text" ? 1 : 0.5,
+                ...fonts.regular,
+              }}
+            >
+              Text
+            </Text>
             {note.textContent.trim().length > 0 && (
               <View
                 style={{
@@ -280,21 +298,11 @@ export default function NoteScreen() {
                   height: 5,
                   borderRadius: 3,
                   backgroundColor: theme.foreground,
-                  opacity: note.mode === "text" ? 1 : 0.3,
-                  marginRight: 8,
+                  opacity: note.mode === "text" ? 1 : 0.4,
+                  marginLeft: 8,
                 }}
               />
             )}
-            <Text
-              style={{
-                fontSize: 20,
-                color: theme.foreground,
-                opacity: note.mode === "text" ? 1 : 0.3,
-                ...fonts.regular,
-              }}
-            >
-              Text
-            </Text>
           </Pressable>
         </View>
 

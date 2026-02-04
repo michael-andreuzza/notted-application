@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Pressable, Modal, Linking } from "react-native";
 import { fonts } from "@/constants/theme";
 import { useAppTheme } from "@/hooks/useAppTheme";
+import { CloseIcon } from "@/components/icons/CloseIcon";
 
 const POLAR_CHECKOUT_URL = "https://buy.polar.sh/polar_cl_qCd3hFE0efbUAbSDO16d4aCtF8BJzlGCRQf8u40mrSz";
 
@@ -52,6 +53,20 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             padding: 20,
           }}
         >
+          {/* Close button */}
+          <Pressable
+            onPress={onClose}
+            hitSlop={12}
+            style={{
+              position: "absolute",
+              top: 16,
+              right: 16,
+              zIndex: 1,
+            }}
+          >
+            <CloseIcon color={theme.foreground} size={20} />
+          </Pressable>
+
           {/* Title */}
           <Text
             style={{
