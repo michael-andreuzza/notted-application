@@ -35,17 +35,16 @@ export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
                 left: CARD_MARGIN_X,
                 right: CARD_MARGIN_X,
                 backgroundColor: isDark ? "#1A1A1A" : "#FFFFFF",
-                borderRadius: 24,
-                padding: 24,
-                paddingTop: 32,
+                borderRadius: 20,
+                padding: 20,
               }}
             >
               {/* Title */}
               <Text
                 style={{
-                  fontSize: 28,
+                  fontSize: 20,
                   color: theme.foreground,
-                  marginBottom: 24,
+                  marginBottom: 20,
                   ...fonts.regular,
                 }}
               >
@@ -53,24 +52,24 @@ export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
               </Text>
 
               {/* Tips */}
-              <View style={{ gap: 20, marginBottom: 32 }}>
+              <View style={{ gap: 14, marginBottom: 24 }}>
                 <TipRow
-                  icon={<PlusIcon color={theme.foreground} size={18} />}
+                  icon={<PlusIcon color={theme.foreground} size={16} />}
                   text="Tap + to create a note"
                   theme={theme}
                 />
                 <TipRow
-                  icon={<CheckIcon color={theme.foreground} size={18} />}
+                  icon={<CheckIcon color={theme.foreground} size={16} />}
                   text="Tap checkbox to mark done"
                   theme={theme}
                 />
                 <TipRow
-                  icon={<ArrowDownIcon color={theme.foreground} size={18} />}
+                  icon={<ArrowDownIcon color={theme.foreground} size={16} />}
                   text="Checked items move to bottom"
                   theme={theme}
                 />
                 <TipRow
-                  icon={<ShakeIcon color={theme.foreground} size={18} />}
+                  icon={<ShakeIcon color={theme.foreground} size={16} />}
                   text="Shake to clear checked items"
                   theme={theme}
                 />
@@ -118,12 +117,12 @@ function TipRow({
 }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <View style={{ width: 32 }}>
+      <View style={{ width: 28 }}>
         {icon}
       </View>
       <Text
         style={{
-          fontSize: 16,
+          fontSize: 14,
           color: theme.foreground,
           opacity: 0.7,
           flex: 1,
