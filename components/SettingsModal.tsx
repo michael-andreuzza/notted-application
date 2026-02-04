@@ -81,46 +81,42 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
               Theme
             </Text>
 
-            <View style={{ gap: 4, marginBottom: 20 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                backgroundColor: isDark ? "#222" : "#F0F0F0",
+                borderRadius: 10,
+                padding: 4,
+                marginBottom: 20,
+              }}
+            >
               {themeOptions.map((option) => (
                 <Pressable
                   key={option.value}
                   onPress={() => setThemeMode(option.value)}
                   style={{
-                    flexDirection: "row",
+                    flex: 1,
+                    paddingVertical: 8,
+                    borderRadius: 8,
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    paddingVertical: 10,
-                    paddingHorizontal: 12,
-                    borderRadius: 10,
                     backgroundColor:
                       themeMode === option.value
                         ? isDark
-                          ? "#222"
-                          : "#F0F0F0"
+                          ? "#333"
+                          : "#FFFFFF"
                         : "transparent",
                   }}
                 >
                   <Text
                     style={{
-                      fontSize: 15,
+                      fontSize: 14,
                       color: theme.foreground,
+                      opacity: themeMode === option.value ? 1 : 0.5,
                       ...fonts.regular,
                     }}
                   >
                     {option.label}
                   </Text>
-                  {themeMode === option.value && (
-                    <Text
-                      style={{
-                        fontSize: 15,
-                        color: theme.foreground,
-                        ...fonts.regular,
-                      }}
-                    >
-                      ✓
-                    </Text>
-                  )}
                 </Pressable>
               ))}
             </View>
