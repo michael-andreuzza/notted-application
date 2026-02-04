@@ -8,6 +8,8 @@ import { useHaptics } from "@/hooks/useHaptics";
 import { PaywallModal } from "@/components/PaywallModal";
 import { SettingsModal } from "@/components/SettingsModal";
 import { OnboardingModal } from "@/components/OnboardingModal";
+import { SettingsIcon } from "@/components/icons/SettingsIcon";
+import { PlusIcon } from "@/components/icons/PlusIcon";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -158,15 +160,7 @@ export default function HomeScreen() {
               justifyContent: "center",
             }}
           >
-            <Text
-              style={{
-                fontSize: 28,
-                color: theme.foreground,
-                ...fonts.regular,
-              }}
-            >
-              ⚙
-            </Text>
+            <SettingsIcon color={theme.foreground} size={22} />
           </Pressable>
 
           {/* New Note Button */}
@@ -181,16 +175,7 @@ export default function HomeScreen() {
               justifyContent: "center",
             }}
           >
-            <Text
-              style={{
-                fontSize: 22,
-                color: theme.background,
-                marginTop: -2,
-                ...fonts.regular,
-              }}
-            >
-              +
-            </Text>
+            <PlusIcon color={theme.background} size={20} />
           </Pressable>
         </View>
       </View>

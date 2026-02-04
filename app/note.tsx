@@ -16,6 +16,9 @@ import { useAppTheme } from "@/hooks/useAppTheme";
 import { useHaptics } from "@/hooks/useHaptics";
 import { ChecklistItem } from "@/components/ChecklistItem";
 import { SettingsModal } from "@/components/SettingsModal";
+import { SettingsIcon } from "@/components/icons/SettingsIcon";
+import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon";
+import { CloseIcon } from "@/components/icons/CloseIcon";
 
 export default function NoteScreen() {
   const router = useRouter();
@@ -363,15 +366,7 @@ export default function NoteScreen() {
               justifyContent: "center",
             }}
           >
-            <Text
-              style={{
-                fontSize: 18,
-                color: "#FF4444",
-                ...fonts.regular,
-              }}
-            >
-              ✕
-            </Text>
+            <CloseIcon color="#FF4444" size={18} />
           </Pressable>
 
           {/* Settings Button */}
@@ -386,15 +381,7 @@ export default function NoteScreen() {
               justifyContent: "center",
             }}
           >
-            <Text
-              style={{
-                fontSize: 28,
-                color: theme.foreground,
-                ...fonts.regular,
-              }}
-            >
-              ⚙
-            </Text>
+            <SettingsIcon color={theme.foreground} size={22} />
           </Pressable>
 
           {/* Back Button */}
@@ -409,15 +396,7 @@ export default function NoteScreen() {
               justifyContent: "center",
             }}
           >
-            <Text
-              style={{
-                fontSize: 18,
-                color: theme.background,
-                ...fonts.regular,
-              }}
-            >
-              ←
-            </Text>
+            <ArrowLeftIcon color={theme.background} size={20} />
           </Pressable>
         </View>
 
