@@ -16,6 +16,7 @@ import { useAppTheme } from "@/hooks/useAppTheme";
 import { useHaptics } from "@/hooks/useHaptics";
 import { ChecklistItem } from "@/components/ChecklistItem";
 import { SettingsModal } from "@/components/SettingsModal";
+import { PaywallModal } from "@/components/PaywallModal";
 import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon";
 import { MoreIcon } from "@/components/icons/MoreIcon";
 
@@ -26,6 +27,9 @@ export default function NoteScreen() {
   const {
     notes,
     activeNoteId,
+    isPremium,
+    createNote,
+    setActiveNote,
     updateNoteTitle,
     setNoteMode,
     updateTextContent,
@@ -39,7 +43,7 @@ export default function NoteScreen() {
   } = useNoteStore();
 
   const note = notes.find((n) => n.id === activeNoteId);
-  const { notification, NotificationType } = useHaptics();
+  const { impact, notification, ImpactStyle, NotificationType } = useHaptics();
 
   // Sort items: unchecked first, checked at bottom
   const sortedItems = note
@@ -48,6 +52,7 @@ export default function NoteScreen() {
 
   const [newItemText, setNewItemText] = useState("");
   const [showSettings, setShowSettings] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const [showClearedMessage, setShowClearedMessage] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const newItemInputRef = useRef<TextInput>(null);
@@ -125,12 +130,97 @@ export default function NoteScreen() {
     newItemInputRef.current?.focus();
   };
 
+  const handleNewNote = () => {
+    if (!isPremium && notes.length >= 1) {
+      notification(NotificationType.Warning);
+      setShowPaywall(true);
+      return;
+    }
+    
+    impact(ImpactStyle.Medium);
+    const newNoteId = createNote();
+    setActiveNote(newNoteId);
+  };
+
   if (!note) {
     return (
-      <View style={{ flex: 1, backgroundColor: theme.background, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ color: theme.foreground, opacity: 0.5, ...fonts.regular }}>
-          No note selected
-        </Text>
+      <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: 50 }}>
+        {/* Top Navigation */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            marginBottom: 16,
+          }}
+        >
+          {/* Back Button */}
+          <Pressable
+            onPress={() => router.replace("/")}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <ArrowLeftIcon color={theme.foreground} size={24} />
+          </Pressable>
+
+          {/* Right actions */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+            {/* New Note */}
+            <Pressable onPress={handleNewNote}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: theme.foreground,
+                  ...fonts.regular,
+                }}
+              >
+                New note
+              </Text>
+            </Pressable>
+
+            {/* Settings - 3 dots icon */}
+            <Pressable
+              onPress={() => setShowSettings(true)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <MoreIcon color={theme.foreground} size={24} />
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Empty state message */}
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <Text
+            style={{
+              fontSize: 28,
+              color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)",
+              ...fonts.regular,
+            }}
+          >
+            No note selected
+          </Text>
+          <Text
+            style={{
+              fontSize: 16,
+              color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)",
+              marginTop: 8,
+              ...fonts.regular,
+            }}
+          >
+            tap "New note" to create one
+          </Text>
+        </View>
+
+        {/* Modals */}
+        <PaywallModal 
+          visible={showPaywall} 
+          onClose={() => setShowPaywall(false)} 
+        />
+        <SettingsModal
+          visible={showSettings}
+          onClose={() => setShowSettings(false)}
+        />
       </View>
     );
   }

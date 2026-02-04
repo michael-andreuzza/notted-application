@@ -24,6 +24,7 @@ interface NoteState {
   notes: Note[];
   activeNoteId: string | null;
   isPremium: boolean;
+  purchaseEmail: string | null;
   drawerPeekHeight: number;
   themeMode: ThemeMode;
   hapticsEnabled: boolean;
@@ -44,7 +45,7 @@ interface NoteState {
   reorderItems: (noteId: string, fromIndex: number, toIndex: number) => void;
   clearCheckedItems: (noteId: string) => void;
   setDrawerPeekHeight: (height: number) => void;
-  setPremium: (isPremium: boolean) => void;
+  setPremium: (isPremium: boolean, email?: string) => void;
   setThemeMode: (mode: ThemeMode) => void;
   setHapticsEnabled: (enabled: boolean) => void;
   setShakeToClearEnabled: (enabled: boolean) => void;
@@ -60,6 +61,7 @@ export const useNoteStore = create<NoteState>()(
       notes: [],
       activeNoteId: null,
       isPremium: false,
+      purchaseEmail: null,
       drawerPeekHeight: 80,
       themeMode: "system" as ThemeMode,
       hapticsEnabled: true,
@@ -231,8 +233,8 @@ export const useNoteStore = create<NoteState>()(
         set({ drawerPeekHeight: height });
       },
 
-      setPremium: (isPremium) => {
-        set({ isPremium });
+      setPremium: (isPremium, email) => {
+        set({ isPremium, ...(email && { purchaseEmail: email }) });
       },
 
       setThemeMode: (mode) => {
@@ -256,6 +258,7 @@ export const useNoteStore = create<NoteState>()(
           notes: [],
           activeNoteId: null,
           isPremium: false,
+          purchaseEmail: null,
           drawerPeekHeight: 80,
           themeMode: "system",
           hapticsEnabled: true,

@@ -52,7 +52,7 @@ export default function PurchaseSuccessScreen() {
           ...fonts.regular,
         }}
       >
-        Premium unlocked. Redirecting...
+        Lifetime access unlocked. Redirecting...
       </Text>
       <ActivityIndicator color={theme.foreground} />
     </View>
