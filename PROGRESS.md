@@ -73,57 +73,14 @@
 - Same codebase works for iOS
 - 30 builds/month shared between Android and iOS on Expo free tier
 
-## Supabase Backend (New)
-
-- **Project URL:** https://tehncfbvkbnjhpkxgfjq.supabase.co
-- **Purpose:** Store purchase entitlements for restore functionality
-
-### Setup Steps:
-
-1. **Run SQL migration** (Supabase Dashboard > SQL Editor):
-   - Copy contents of `supabase/migrations/001_entitlements.sql`
-   - Paste and run in SQL Editor
-
-2. **Deploy Edge Functions** (requires Supabase CLI):
-   ```bash
-   # Install Supabase CLI
-   npm install -g supabase
-   
-   # Login to Supabase
-   supabase login
-   
-   # Link project
-   supabase link --project-ref tehncfbvkbnjhpkxgfjq
-   
-   # Deploy functions
-   supabase functions deploy polar-webhook
-   supabase functions deploy restore
-   ```
-
-3. **Set Environment Variables** (Supabase Dashboard > Edge Functions > Secrets):
-   - `POLAR_WEBHOOK_SECRET` - Get from Polar webhook settings
-
-4. **Configure Polar Webhook** (Polar Dashboard > Settings > Webhooks):
-   - URL: `https://tehncfbvkbnjhpkxgfjq.supabase.co/functions/v1/polar-webhook`
-   - Events: `checkout.created`, `order.created`
-   - Copy webhook secret to Supabase
-
-### Files Created:
-
-- `supabase/migrations/001_entitlements.sql` - Database schema
-- `supabase/functions/polar-webhook/index.ts` - Webhook handler
-- `supabase/functions/restore/index.ts` - Restore endpoint
-- `constants/supabase.ts` - App configuration
-
 ## Costs Summary
 
-| Item | Cost | Status |
-|------|------|--------|
-| Expo | $0 | Free tier (30 builds/month) |
-| Google Play | $25 | Paid (one-time) |
-| Apple Developer | $99/year | Not purchased yet |
-| Polar.sh | % of sales | Only when you make money |
-| Supabase | $0 | Free tier (500K edge function calls/month) |
+| Item            | Cost       | Status                      |
+| --------------- | ---------- | --------------------------- |
+| Expo            | $0         | Free tier (30 builds/month) |
+| Google Play     | $25        | Paid (one-time)             |
+| Apple Developer | $99/year   | Not purchased yet           |
+| Polar.sh        | % of sales | Only when you make money    |
 
 ## Commands Reference
 

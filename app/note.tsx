@@ -16,9 +16,7 @@ import { useAppTheme } from "@/hooks/useAppTheme";
 import { useHaptics } from "@/hooks/useHaptics";
 import { ChecklistItem } from "@/components/ChecklistItem";
 import { SettingsModal } from "@/components/SettingsModal";
-import { SettingsIcon } from "@/components/icons/SettingsIcon";
 import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon";
-import { CloseIcon } from "@/components/icons/CloseIcon";
 import { MoreIcon } from "@/components/icons/MoreIcon";
 
 export default function NoteScreen() {
@@ -56,21 +54,8 @@ export default function NoteScreen() {
   const textContentRef = useRef<TextInput>(null);
   const lastShakeTime = useRef(0);
 
-  // Auto-focus on the input when entering the note
-  useEffect(() => {
-    if (!note) return;
-    const timer = setTimeout(() => {
-      if (note.mode === "list") {
-        // Only auto-focus when the list is empty
-        if (note.items.length === 0) {
-          newItemInputRef.current?.focus();
-        }
-      } else {
-        textContentRef.current?.focus();
-      }
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [note?.id, note?.mode, note?.items.length]);
+  // Removed auto-focus - let users view notes without keyboard popping up
+  // They can tap on the input field when they want to type
 
   // Shake to clear checked items
   const handleShake = useCallback(() => {

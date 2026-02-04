@@ -24,7 +24,6 @@ interface NoteState {
   notes: Note[];
   activeNoteId: string | null;
   isPremium: boolean;
-  purchaseEmail: string | null;
   drawerPeekHeight: number;
   themeMode: ThemeMode;
   hapticsEnabled: boolean;
@@ -45,7 +44,7 @@ interface NoteState {
   reorderItems: (noteId: string, fromIndex: number, toIndex: number) => void;
   clearCheckedItems: (noteId: string) => void;
   setDrawerPeekHeight: (height: number) => void;
-  setPremium: (isPremium: boolean, email?: string) => void;
+  setPremium: (isPremium: boolean) => void;
   setThemeMode: (mode: ThemeMode) => void;
   setHapticsEnabled: (enabled: boolean) => void;
   setShakeToClearEnabled: (enabled: boolean) => void;
@@ -61,7 +60,6 @@ export const useNoteStore = create<NoteState>()(
       notes: [],
       activeNoteId: null,
       isPremium: false,
-      purchaseEmail: null,
       drawerPeekHeight: 80,
       themeMode: "system" as ThemeMode,
       hapticsEnabled: true,
@@ -114,7 +112,7 @@ export const useNoteStore = create<NoteState>()(
       updateNoteTitle: (id, title) => {
         set((state) => ({
           notes: state.notes.map((n) =>
-            n.id === id ? { ...n, title, updatedAt: Date.now() } : n
+            n.id === id ? { ...n, title, updatedAt: Date.now() } : n,
           ),
         }));
       },
@@ -122,7 +120,7 @@ export const useNoteStore = create<NoteState>()(
       setNoteMode: (id, mode) => {
         set((state) => ({
           notes: state.notes.map((n) =>
-            n.id === id ? { ...n, mode, updatedAt: Date.now() } : n
+            n.id === id ? { ...n, mode, updatedAt: Date.now() } : n,
           ),
         }));
       },
@@ -132,7 +130,7 @@ export const useNoteStore = create<NoteState>()(
           notes: state.notes.map((n) =>
             n.id === id
               ? { ...n, textContent: content, updatedAt: Date.now() }
-              : n
+              : n,
           ),
         }));
       },
@@ -148,7 +146,7 @@ export const useNoteStore = create<NoteState>()(
           notes: state.notes.map((n) =>
             n.id === noteId
               ? { ...n, items: [...n.items, newItem], updatedAt: Date.now() }
-              : n
+              : n,
           ),
         }));
       },
@@ -160,11 +158,11 @@ export const useNoteStore = create<NoteState>()(
               ? {
                   ...n,
                   items: n.items.map((item) =>
-                    item.id === itemId ? { ...item, text } : item
+                    item.id === itemId ? { ...item, text } : item,
                   ),
                   updatedAt: Date.now(),
                 }
-              : n
+              : n,
           ),
         }));
       },
@@ -178,11 +176,11 @@ export const useNoteStore = create<NoteState>()(
                   items: n.items.map((item) =>
                     item.id === itemId
                       ? { ...item, checked: !item.checked }
-                      : item
+                      : item,
                   ),
                   updatedAt: Date.now(),
                 }
-              : n
+              : n,
           ),
         }));
       },
@@ -196,7 +194,7 @@ export const useNoteStore = create<NoteState>()(
                   items: n.items.filter((item) => item.id !== itemId),
                   updatedAt: Date.now(),
                 }
-              : n
+              : n,
           ),
         }));
       },
@@ -224,7 +222,7 @@ export const useNoteStore = create<NoteState>()(
                   items: n.items.filter((item) => !item.checked),
                   updatedAt: Date.now(),
                 }
-              : n
+              : n,
           ),
         }));
       },
@@ -233,8 +231,8 @@ export const useNoteStore = create<NoteState>()(
         set({ drawerPeekHeight: height });
       },
 
-      setPremium: (isPremium, email) => {
-        set({ isPremium, ...(email && { purchaseEmail: email }) });
+      setPremium: (isPremium) => {
+        set({ isPremium });
       },
 
       setThemeMode: (mode) => {
@@ -258,7 +256,6 @@ export const useNoteStore = create<NoteState>()(
           notes: [],
           activeNoteId: null,
           isPremium: false,
-          purchaseEmail: null,
           drawerPeekHeight: 80,
           themeMode: "system",
           hapticsEnabled: true,
@@ -270,6 +267,6 @@ export const useNoteStore = create<NoteState>()(
     {
       name: "notted-storage",
       storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
+    },
+  ),
 );
