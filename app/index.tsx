@@ -83,19 +83,18 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          {/* More/Settings Button */}
-          <Pressable
-            onPress={() => setShowSettings(true)}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: isDark ? "#222" : "#F0F0F0",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <MoreIcon color={theme.foreground} size={20} />
+          {/* Settings */}
+          <Pressable onPress={() => setShowSettings(true)}>
+            <Text
+              style={{
+                fontSize: 16,
+                color: theme.foreground,
+                opacity: 0.6,
+                ...fonts.regular,
+              }}
+            >
+              Settings
+            </Text>
           </Pressable>
         </View>
 
@@ -161,6 +160,40 @@ export default function HomeScreen() {
                 tap + to get started
               </Text>
             </View>
+          )}
+
+          {/* Premium Banner - show only if not premium and has at least 1 note */}
+          {!isPremium && notes.length >= 1 && (
+            <Pressable
+              onPress={() => setShowPaywall(true)}
+              style={{
+                marginTop: 32,
+                padding: 16,
+                backgroundColor: isDark ? "#1A1A1A" : "#F5F5F5",
+                borderRadius: 12,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: theme.foreground,
+                  ...fonts.regular,
+                }}
+              >
+                Unlimited notes
+              </Text>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: theme.foreground,
+                  opacity: 0.5,
+                  marginTop: 4,
+                  ...fonts.regular,
+                }}
+              >
+                Upgrade for $4.99 — lifetime access
+              </Text>
+            </Pressable>
           )}
         </ScrollView>
 

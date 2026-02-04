@@ -183,36 +183,33 @@ export default function NoteScreen() {
             <ArrowLeftIcon color={theme.foreground} size={20} />
           </Pressable>
 
-          {/* Right buttons */}
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            {/* Delete Button */}
-            <Pressable
-              onPress={() => setShowDeleteConfirm(true)}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: isDark ? "#2A1515" : "#FFE5E5",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <CloseIcon color="#FF4444" size={18} />
+          {/* Right actions */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+            {/* Delete */}
+            <Pressable onPress={() => setShowDeleteConfirm(true)}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: "#FF4444",
+                  ...fonts.regular,
+                }}
+              >
+                Delete
+              </Text>
             </Pressable>
 
-            {/* More/Settings Button */}
-            <Pressable
-              onPress={() => setShowSettings(true)}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: isDark ? "#222" : "#F0F0F0",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <MoreIcon color={theme.foreground} size={20} />
+            {/* Settings */}
+            <Pressable onPress={() => setShowSettings(true)}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: theme.foreground,
+                  opacity: 0.6,
+                  ...fonts.regular,
+                }}
+              >
+                Settings
+              </Text>
             </Pressable>
           </View>
         </View>
