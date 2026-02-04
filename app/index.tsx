@@ -46,29 +46,56 @@ export default function HomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       {/* Content */}
-      <View style={{ flex: 1, paddingTop: 60 }}>
-        {/* Header - notted */}
-        <View style={{ paddingHorizontal: 24, marginBottom: 40, flexDirection: "row", alignItems: "center" }}>
-          <Image
-            source={require("@/assets/icon.png")}
+      <View style={{ flex: 1, paddingTop: 50 }}>
+        {/* Top Navigation */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            marginBottom: 16,
+          }}
+        >
+          {/* Logo and name */}
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Image
+              source={require("@/assets/icon.png")}
+              style={{
+                width: 16,
+                height: 16,
+                marginRight: 6,
+                opacity: isDark ? 0.5 : 0.4,
+              }}
+              resizeMode="contain"
+            />
+            <Text
+              style={{
+                fontSize: 16,
+                color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)",
+                lineHeight: 16,
+                ...fonts.regular,
+              }}
+            >
+              notted
+            </Text>
+          </View>
+
+          {/* Settings Button */}
+          <Pressable
+            onPress={() => setShowSettings(true)}
             style={{
-              width: 16,
-              height: 16,
-              marginRight: 6,
-              opacity: isDark ? 0.5 : 0.4,
-            }}
-            resizeMode="contain"
-          />
-          <Text
-            style={{
-              fontSize: 16,
-              color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)",
-              lineHeight: 16,
-              ...fonts.regular,
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: isDark ? "#222" : "#F0F0F0",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            notted
-          </Text>
+            <SettingsIcon color={theme.foreground} size={20} />
+          </Pressable>
         </View>
 
         {/* Notes List */}
@@ -136,48 +163,23 @@ export default function HomeScreen() {
           )}
         </ScrollView>
 
-        {/* Buttons */}
-        <View
+        {/* Add Note Button - Bottom Right */}
+        <Pressable
+          onPress={handleNewNote}
           style={{
             position: "absolute",
             bottom: 40,
-            left: 0,
-            right: 0,
-            flexDirection: "row",
+            right: 24,
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            backgroundColor: isDark ? "#222" : "#F0F0F0",
+            alignItems: "center",
             justifyContent: "center",
-            gap: 12,
           }}
         >
-          {/* Settings Button */}
-          <Pressable
-            onPress={() => setShowSettings(true)}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: isDark ? "#222" : "#F0F0F0",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <SettingsIcon color={theme.foreground} size={22} />
-          </Pressable>
-
-          {/* New Note Button */}
-          <Pressable
-            onPress={handleNewNote}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: theme.foreground,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <PlusIcon color={theme.background} size={20} />
-          </Pressable>
-        </View>
+          <PlusIcon color={theme.foreground} size={24} />
+        </Pressable>
       </View>
 
       {/* Modals */}

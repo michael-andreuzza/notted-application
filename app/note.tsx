@@ -155,7 +155,67 @@ export default function NoteScreen() {
       style={{ flex: 1, backgroundColor: theme.background }}
       keyboardVerticalOffset={0}
     >
-      <View style={{ flex: 1, paddingTop: 60 }}>
+      <View style={{ flex: 1, paddingTop: 50 }}>
+        {/* Top Navigation */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            marginBottom: 16,
+          }}
+        >
+          {/* Back Button */}
+          <Pressable
+            onPress={() => router.replace("/")}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: isDark ? "#222" : "#F0F0F0",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <ArrowLeftIcon color={theme.foreground} size={20} />
+          </Pressable>
+
+          {/* Right buttons */}
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            {/* Settings Button */}
+            <Pressable
+              onPress={() => setShowSettings(true)}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: isDark ? "#222" : "#F0F0F0",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <SettingsIcon color={theme.foreground} size={20} />
+            </Pressable>
+
+            {/* Delete Button */}
+            <Pressable
+              onPress={() => setShowDeleteConfirm(true)}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: isDark ? "#2A1515" : "#FFE5E5",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <CloseIcon color="#FF4444" size={18} />
+            </Pressable>
+          </View>
+        </View>
+
         {/* Header - note title */}
         <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
           <TextInput
@@ -342,71 +402,13 @@ export default function NoteScreen() {
           </ScrollView>
         )}
 
-        {/* Buttons */}
-        <View
-          style={{
-            position: "absolute",
-            bottom: 40,
-            left: 0,
-            right: 0,
-            flexDirection: "row",
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
-          {/* Delete Button */}
-          <Pressable
-            onPress={() => setShowDeleteConfirm(true)}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: isDark ? "#331111" : "#FFE5E5",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <CloseIcon color="#FF4444" size={18} />
-          </Pressable>
-
-          {/* Settings Button */}
-          <Pressable
-            onPress={() => setShowSettings(true)}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: isDark ? "#222" : "#F0F0F0",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <SettingsIcon color={theme.foreground} size={22} />
-          </Pressable>
-
-          {/* Back Button */}
-          <Pressable
-            onPress={() => router.replace("/")}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: theme.foreground,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <ArrowLeftIcon color={theme.background} size={20} />
-          </Pressable>
-        </View>
-
         {/* Delete confirmation */}
         {showDeleteConfirm && (
           <View
             style={{
               position: "absolute",
-              bottom: 120,
-              right: 24,
+              top: 100,
+              right: 16,
               backgroundColor: isDark ? "#1A1A1A" : "#FFFFFF",
               borderRadius: 16,
               padding: 16,
