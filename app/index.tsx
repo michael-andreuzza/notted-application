@@ -174,8 +174,8 @@ export default function HomeScreen() {
 
         </ScrollView>
 
-        {/* Premium Banner - fixed at bottom, show only if not premium and has at least 1 note */}
-        {!isPremium && notes.length >= 1 && (
+        {/* Premium Banner - fixed at bottom, show if not premium */}
+        {!isPremium && (
           <Pressable
             onPress={() => setShowPaywall(true)}
             style={{
