@@ -83,13 +83,29 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          {/* Settings - 3 dots icon */}
-          <Pressable
-            onPress={() => setShowSettings(true)}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          >
-            <MoreIcon color={theme.foreground} size={24} />
-          </Pressable>
+          {/* Right actions */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+            {/* New Note */}
+            <Pressable onPress={handleNewNote}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: theme.foreground,
+                  ...fonts.regular,
+                }}
+              >
+                New note
+              </Text>
+            </Pressable>
+
+            {/* Settings - 3 dots icon */}
+            <Pressable
+              onPress={() => setShowSettings(true)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <MoreIcon color={theme.foreground} size={24} />
+            </Pressable>
+          </View>
         </View>
 
         {/* Notes List */}
@@ -151,7 +167,7 @@ export default function HomeScreen() {
                   ...fonts.regular,
                 }}
               >
-                tap + to get started
+                tap "New note" to get started
               </Text>
             </View>
           )}
@@ -191,23 +207,6 @@ export default function HomeScreen() {
           )}
         </ScrollView>
 
-        {/* Add Note Button - Bottom Right */}
-        <Pressable
-          onPress={handleNewNote}
-          style={{
-            position: "absolute",
-            bottom: 40,
-            right: 24,
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            backgroundColor: isDark ? "#222" : "#F0F0F0",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <PlusIcon color={theme.foreground} size={24} />
-        </Pressable>
       </View>
 
       {/* Modals */}
