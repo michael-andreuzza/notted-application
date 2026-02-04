@@ -86,16 +86,9 @@ export default function HomeScreen() {
           {/* Settings - 3 dots icon */}
           <Pressable
             onPress={() => setShowSettings(true)}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: isDark ? "#222" : "#F0F0F0",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            <MoreIcon color={theme.foreground} size={20} />
+            <MoreIcon color={theme.foreground} size={24} />
           </Pressable>
         </View>
 
