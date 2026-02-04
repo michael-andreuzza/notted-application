@@ -202,7 +202,7 @@ export default function NoteScreen() {
         </View>
 
         {/* Header - note title */}
-        <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+        <View style={{ paddingHorizontal: 24, marginBottom: 16 }}>
           <TextInput
             value={note.title}
             onChangeText={(text) => updateNoteTitle(note.id, text)}
@@ -210,7 +210,7 @@ export default function NoteScreen() {
             placeholderTextColor={isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}
             // @ts-ignore - web only
             style={{
-              fontSize: 28,
+              fontSize: 20,
               color: theme.foreground,
               padding: 0,
               outlineStyle: "none",
