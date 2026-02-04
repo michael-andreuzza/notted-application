@@ -33,6 +33,7 @@ export default function NoteScreen() {
     deleteItem,
     clearCheckedItems,
     deleteNote,
+    shakeToClearEnabled,
   } = useNoteStore();
 
   const note = notes.find((n) => n.id === activeNoteId);
@@ -81,23 +82,38 @@ export default function NoteScreen() {
     }
   }, [note, clearCheckedItems]);
 
-  // Shake detection - only on native platforms
+  // Shake detection - only on native platforms and if enabled
   useEffect(() => {
-    if (Platform.OS === "web") return;
+    if (Platform.OS === "web" || !shakeToClearEnabled) return;
 
     let lastX = 0;
     let lastY = 0;
     let lastZ = 0;
-    const SHAKE_THRESHOLD = 1.5;
+    let shakeCount = 0;
+    let lastShakeDetect = 0;
+    const SHAKE_THRESHOLD = 4.0; // Requires vigorous shaking
+    const SHAKES_REQUIRED = 3; // Need 3 shake motions within 1 second
 
     Accelerometer.setUpdateInterval(100);
     const subscription = Accelerometer.addListener(({ x, y, z }) => {
       const deltaX = Math.abs(x - lastX);
       const deltaY = Math.abs(y - lastY);
       const deltaZ = Math.abs(z - lastZ);
+      const now = Date.now();
 
       if (deltaX + deltaY + deltaZ > SHAKE_THRESHOLD) {
-        handleShake();
+        // Reset count if more than 1 second since last shake motion
+        if (now - lastShakeDetect > 1000) {
+          shakeCount = 0;
+        }
+        shakeCount++;
+        lastShakeDetect = now;
+
+        // Only trigger after multiple shake motions
+        if (shakeCount >= SHAKES_REQUIRED) {
+          handleShake();
+          shakeCount = 0;
+        }
       }
 
       lastX = x;
@@ -106,7 +122,7 @@ export default function NoteScreen() {
     });
 
     return () => subscription.remove();
-  }, [handleShake]);
+  }, [handleShake, shakeToClearEnabled]);
 
   const handleAddItem = () => {
     if (note && newItemText.trim()) {

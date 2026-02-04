@@ -27,6 +27,7 @@ interface NoteState {
   drawerPeekHeight: number;
   themeMode: ThemeMode;
   hapticsEnabled: boolean;
+  shakeToClearEnabled: boolean;
   hasSeenOnboarding: boolean;
 
   // Actions
@@ -46,6 +47,7 @@ interface NoteState {
   setPremium: (isPremium: boolean) => void;
   setThemeMode: (mode: ThemeMode) => void;
   setHapticsEnabled: (enabled: boolean) => void;
+  setShakeToClearEnabled: (enabled: boolean) => void;
   setHasSeenOnboarding: (seen: boolean) => void;
   resetAllData: () => void;
 }
@@ -61,6 +63,7 @@ export const useNoteStore = create<NoteState>()(
       drawerPeekHeight: 80,
       themeMode: "system" as ThemeMode,
       hapticsEnabled: true,
+      shakeToClearEnabled: true,
       hasSeenOnboarding: false,
 
       createNote: () => {
@@ -240,6 +243,10 @@ export const useNoteStore = create<NoteState>()(
         set({ hapticsEnabled: enabled });
       },
 
+      setShakeToClearEnabled: (enabled) => {
+        set({ shakeToClearEnabled: enabled });
+      },
+
       setHasSeenOnboarding: (seen) => {
         set({ hasSeenOnboarding: seen });
       },
@@ -252,6 +259,7 @@ export const useNoteStore = create<NoteState>()(
           drawerPeekHeight: 80,
           themeMode: "system",
           hapticsEnabled: true,
+          shakeToClearEnabled: true,
           hasSeenOnboarding: false,
         });
       },

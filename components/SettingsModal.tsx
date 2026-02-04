@@ -13,7 +13,7 @@ interface SettingsModalProps {
 
 export function SettingsModal({ visible, onClose }: SettingsModalProps) {
   const systemColorScheme = useColorScheme();
-  const { themeMode, setThemeMode, hapticsEnabled, setHapticsEnabled, setHasSeenOnboarding, resetAllData } = useNoteStore();
+  const { themeMode, setThemeMode, hapticsEnabled, setHapticsEnabled, shakeToClearEnabled, setShakeToClearEnabled, setHasSeenOnboarding, resetAllData } = useNoteStore();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // Determine actual theme based on mode
@@ -163,7 +163,7 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
                   ? "#222"
                   : "#F0F0F0"
                 : "transparent",
-              marginBottom: 32,
+              marginBottom: 8,
             }}
           >
             <Text
@@ -176,6 +176,45 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
               Vibration
             </Text>
             {hapticsEnabled && (
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: theme.foreground,
+                  ...fonts.regular,
+                }}
+              >
+                ✓
+              </Text>
+            )}
+          </Pressable>
+
+          <Pressable
+            onPress={() => setShakeToClearEnabled(!shakeToClearEnabled)}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              borderRadius: 12,
+              backgroundColor: shakeToClearEnabled
+                ? isDark
+                  ? "#222"
+                  : "#F0F0F0"
+                : "transparent",
+              marginBottom: 32,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                color: theme.foreground,
+                ...fonts.regular,
+              }}
+            >
+              Shake to clear
+            </Text>
+            {shakeToClearEnabled && (
               <Text
                 style={{
                   fontSize: 16,
