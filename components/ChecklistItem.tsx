@@ -106,10 +106,10 @@ export function ChecklistItem({
           // @ts-ignore - web only
           style={{
             flex: 1,
-            fontSize: 18,
+            fontSize: 16,
             color: theme.foreground,
             padding: 0,
-            opacity: item.checked ? 0.3 : 1,
+            opacity: item.checked ? 0.3 : 0.7,
             textDecorationLine: item.checked ? "line-through" : "none",
             outlineStyle: "none",
             textTransform: "capitalize",
@@ -120,9 +120,9 @@ export function ChecklistItem({
         <Pressable onPress={handlePress} style={{ flex: 1 }}>
           <Text
             style={{
-              fontSize: 18,
+              fontSize: 16,
               color: theme.foreground,
-              opacity: item.checked ? 0.3 : 1,
+              opacity: item.checked ? 0.3 : 0.7,
               textDecorationLine: item.checked ? "line-through" : "none",
               textTransform: "capitalize",
               ...fonts.regular,

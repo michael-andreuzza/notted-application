@@ -338,8 +338,9 @@ export default function NoteScreen() {
                 // @ts-ignore - web only
                 style={{
                   flex: 1,
-                  fontSize: 18,
+                  fontSize: 16,
                   color: theme.foreground,
+                  opacity: 0.7,
                   padding: 0,
                   outlineStyle: "none",
                   ...fonts.regular,
