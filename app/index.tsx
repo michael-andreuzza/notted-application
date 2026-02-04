@@ -10,6 +10,7 @@ import { SettingsModal } from "@/components/SettingsModal";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { SettingsIcon } from "@/components/icons/SettingsIcon";
 import { PlusIcon } from "@/components/icons/PlusIcon";
+import { MoreIcon } from "@/components/icons/MoreIcon";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -82,7 +83,7 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          {/* Settings Button */}
+          {/* More/Settings Button */}
           <Pressable
             onPress={() => setShowSettings(true)}
             style={{
@@ -94,7 +95,7 @@ export default function HomeScreen() {
               justifyContent: "center",
             }}
           >
-            <SettingsIcon color={theme.foreground} size={20} />
+            <MoreIcon color={theme.foreground} size={20} />
           </Pressable>
         </View>
 

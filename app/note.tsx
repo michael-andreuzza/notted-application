@@ -19,6 +19,7 @@ import { SettingsModal } from "@/components/SettingsModal";
 import { SettingsIcon } from "@/components/icons/SettingsIcon";
 import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon";
 import { CloseIcon } from "@/components/icons/CloseIcon";
+import { MoreIcon } from "@/components/icons/MoreIcon";
 
 export default function NoteScreen() {
   const router = useRouter();
@@ -184,21 +185,6 @@ export default function NoteScreen() {
 
           {/* Right buttons */}
           <View style={{ flexDirection: "row", gap: 8 }}>
-            {/* Settings Button */}
-            <Pressable
-              onPress={() => setShowSettings(true)}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: isDark ? "#222" : "#F0F0F0",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <SettingsIcon color={theme.foreground} size={20} />
-            </Pressable>
-
             {/* Delete Button */}
             <Pressable
               onPress={() => setShowDeleteConfirm(true)}
@@ -212,6 +198,21 @@ export default function NoteScreen() {
               }}
             >
               <CloseIcon color="#FF4444" size={18} />
+            </Pressable>
+
+            {/* More/Settings Button */}
+            <Pressable
+              onPress={() => setShowSettings(true)}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: isDark ? "#222" : "#F0F0F0",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <MoreIcon color={theme.foreground} size={20} />
             </Pressable>
           </View>
         </View>
