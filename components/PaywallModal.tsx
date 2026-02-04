@@ -50,21 +50,8 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             backgroundColor: isDark ? "#1A1A1A" : "#FFFFFF",
             borderRadius: 24,
             padding: 24,
-            paddingTop: 16,
           }}
         >
-          {/* Drag handle */}
-          <View
-            style={{
-              alignSelf: "center",
-              width: 36,
-              height: 4,
-              backgroundColor: isDark ? "#333" : "#DDD",
-              borderRadius: 2,
-              marginBottom: 24,
-            }}
-          />
-
           {/* Title */}
           <Text
             style={{
