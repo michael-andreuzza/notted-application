@@ -11,20 +11,16 @@ export const colors = {
 
 export const fonts = {
   regular: {
-    fontFamily: "System",
-    fontWeight: "400" as const,
+    fontFamily: "Inter_400Regular",
   },
   medium: {
-    fontFamily: "System",
-    fontWeight: "500" as const,
+    fontFamily: "Inter_500Medium",
   },
   semibold: {
-    fontFamily: "System",
-    fontWeight: "600" as const,
+    fontFamily: "Inter_600SemiBold",
   },
   bold: {
-    fontFamily: "System",
-    fontWeight: "700" as const,
+    fontFamily: "Inter_700Bold",
   },
 };
 
