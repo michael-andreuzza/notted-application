@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Pressable, Modal, TouchableWithoutFeedback } from "react-native";
+import { useTranslation } from "react-i18next";
 import { fonts } from "@/constants/theme";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { PlusIcon } from "@/components/icons/PlusIcon";
@@ -8,9 +9,6 @@ import { ArrowDownIcon } from "@/components/icons/ArrowDownIcon";
 import { ShakeIcon } from "@/components/icons/ShakeIcon";
 import { CloseIcon } from "@/components/icons/CloseIcon";
 
-const CARD_MARGIN_X = 12;
-const CARD_MARGIN_BOTTOM = 12;
-
 interface OnboardingModalProps {
   visible: boolean;
   onClose: () => void;
@@ -18,12 +16,13 @@ interface OnboardingModalProps {
 
 export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
   const { isDark, theme } = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType="slide"
       onRequestClose={onClose}
     >
       <TouchableWithoutFeedback onPress={onClose}>
@@ -32,10 +31,10 @@ export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
             <View
               style={{
                 position: "absolute",
-                bottom: CARD_MARGIN_BOTTOM,
-                left: CARD_MARGIN_X,
-                right: CARD_MARGIN_X,
-                backgroundColor: isDark ? "#1A1A1A" : "#FFFFFF",
+                bottom: 12,
+                left: 12,
+                right: 12,
+                backgroundColor: theme.surface,
                 borderRadius: 20,
                 padding: 20,
               }}
@@ -60,42 +59,39 @@ export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
                   fontSize: 20,
                   color: theme.foreground,
                   marginBottom: 20,
-                  ...fonts.regular,
+                  ...fonts.medium,
                 }}
               >
-                Welcome to notted
+                {t("welcomeToNotted")}
               </Text>
 
               {/* Tips */}
               <View style={{ gap: 14, marginBottom: 24 }}>
                 <TipRow
                   icon={<PlusIcon color={theme.foreground} size={16} />}
-                  text="Tap + to create a note"
+                  text={t("tipCreate")}
                   theme={theme}
                 />
                 <TipRow
                   icon={<CheckIcon color={theme.foreground} size={16} />}
-                  text="Tap checkbox to mark done"
+                  text={t("tipCheck")}
                   theme={theme}
                 />
                 <TipRow
                   icon={<ArrowDownIcon color={theme.foreground} size={16} />}
-                  text="Checked items move to bottom"
+                  text={t("tipMove")}
                   theme={theme}
                 />
                 <TipRow
                   icon={<ShakeIcon color={theme.foreground} size={16} />}
-                  text="Shake to clear checked items"
+                  text={t("tipShake")}
                   theme={theme}
                 />
               </View>
 
               {/* Get started button */}
               <Pressable
-                onPress={() => {
-                  console.log("Get Started pressed");
-                  onClose();
-                }}
+                onPress={onClose}
                 style={{
                   backgroundColor: theme.foreground,
                   paddingVertical: 16,
@@ -110,7 +106,7 @@ export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
                     ...fonts.regular,
                   }}
                 >
-                  Get Started
+                  {t("getStarted")}
                 </Text>
               </Pressable>
             </View>

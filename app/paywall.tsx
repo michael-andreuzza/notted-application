@@ -56,7 +56,7 @@ export default function PaywallScreen() {
             alignSelf: "center",
             width: 36,
             height: 4,
-            backgroundColor: isDark ? "#333" : "#DDD",
+            backgroundColor: theme.muted,
             borderRadius: 2,
             marginBottom: 24,
           }}
@@ -110,7 +110,7 @@ export default function PaywallScreen() {
         <View
           style={{
             borderWidth: 1,
-            borderColor: isDark ? "#333" : "#E5E5E5",
+            borderColor: theme.border,
             borderRadius: 12,
             padding: 16,
             marginBottom: 24,

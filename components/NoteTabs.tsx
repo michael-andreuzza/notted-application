@@ -30,7 +30,7 @@ export function NoteTabs({ onNewNote }: NoteTabsProps) {
         marginBottom: 12,
         paddingBottom: 12,
         borderBottomWidth: 1,
-        borderBottomColor: isDark ? "#222" : "#EEE",
+        borderBottomColor: theme.border,
       }}
     >
       <ScrollView
@@ -48,9 +48,7 @@ export function NoteTabs({ onNewNote }: NoteTabsProps) {
               borderRadius: 16,
               backgroundColor:
                 activeNoteId === note.id
-                  ? isDark
-                    ? "#333"
-                    : "#E5E5E5"
+                  ? theme.muted
                   : "transparent",
             }}
           >

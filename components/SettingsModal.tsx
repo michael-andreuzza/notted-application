@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { View, Text, Pressable, useColorScheme, Modal, ScrollView, Animated } from "react-native";
+import { useTranslation } from "react-i18next";
 import { colors, fonts } from "@/constants/theme";
-import { useNoteStore, ThemeMode } from "@/stores/noteStore";
+import { useNoteStore, ThemeMode, LanguageCode } from "@/stores/noteStore";
 import { CloseIcon } from "@/components/icons/CloseIcon";
-
-const CARD_MARGIN_X = 12;
-const CARD_MARGIN_BOTTOM = 12;
+import { SectionLabel } from "@/components/SectionLabel";
+import { ToggleRow } from "@/components/ToggleRow";
+import { LANGUAGES } from "@/i18n";
 
 interface SettingsModalProps {
   visible: boolean;
@@ -14,7 +15,8 @@ interface SettingsModalProps {
 
 export function SettingsModal({ visible, onClose }: SettingsModalProps) {
   const systemColorScheme = useColorScheme();
-  const { themeMode, setThemeMode, hapticsEnabled, setHapticsEnabled, shakeToClearEnabled, setShakeToClearEnabled, setHasSeenOnboarding, resetAllData } = useNoteStore();
+  const { t, i18n } = useTranslation();
+  const { themeMode, setThemeMode, language, setLanguage, hapticsEnabled, setHapticsEnabled, shakeToClearEnabled, setShakeToClearEnabled, setHasSeenOnboarding, resetAllData } = useNoteStore();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // Determine actual theme based on mode
@@ -24,9 +26,9 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
   const theme = isDark ? colors.dark : colors.light;
 
   const themeOptions: { value: ThemeMode; label: string }[] = [
-    { value: "system", label: "System" },
-    { value: "light", label: "Light" },
-    { value: "dark", label: "Dark" },
+    { value: "system", label: t("system") },
+    { value: "light", label: t("light") },
+    { value: "dark", label: t("dark") },
   ];
 
   // Theme tab animation - 0 = system, 1 = light, 2 = dark
@@ -41,6 +43,12 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
       friction: 12,
     }).start();
   }, [themeMode]);
+
+  // Handle language change
+  const handleLanguageChange = (langCode: LanguageCode) => {
+    setLanguage(langCode);
+    i18n.changeLanguage(langCode);
+  };
 
   return (
     <Modal
@@ -60,10 +68,10 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
         <View
           style={{
             position: "absolute",
-            bottom: CARD_MARGIN_BOTTOM,
-            left: CARD_MARGIN_X,
-            right: CARD_MARGIN_X,
-            backgroundColor: isDark ? "#1A1A1A" : "#FFFFFF",
+            bottom: 12,
+            left: 12,
+            right: 12,
+            backgroundColor: theme.surface,
             borderRadius: 20,
             padding: 20,
             maxHeight: "70%",
@@ -90,24 +98,14 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
                 fontSize: 20,
                 color: theme.foreground,
                 marginBottom: 20,
-                ...fonts.regular,
+                ...fonts.medium,
               }}
             >
-              Settings
+              {t("settings")}
             </Text>
 
-            {/* Theme Section */}
-            <Text
-              style={{
-                fontSize: 12,
-                color: theme.foreground,
-                opacity: 0.4,
-                marginBottom: 8,
-                ...fonts.regular,
-              }}
-            >
-              Theme
-            </Text>
+            {/* Language Section */}
+            <SectionLabel>{t("language")}</SectionLabel>
 
             <View
               style={{
@@ -116,133 +114,112 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
                 marginBottom: 20,
               }}
             >
-              {themeOptions.map((option, index) => (
-                <Animated.View
-                  key={option.value}
-                  style={{
-                    flex: themeAnimation.interpolate({
-                      inputRange: [0, 1, 2],
-                      outputRange: index === 0 ? [2, 1, 1] : index === 1 ? [1, 2, 1] : [1, 1, 2],
-                    }),
-                  }}
-                >
+              {LANGUAGES.map((lang) => {
+                const isSelected = (language || i18n.language) === lang.code;
+                return (
                   <Pressable
-                    onPress={() => setThemeMode(option.value)}
+                    key={lang.code}
+                    onPress={() => handleLanguageChange(lang.code as LanguageCode)}
                     style={{
+                      flex: 1,
                       paddingVertical: 10,
-                      paddingHorizontal: 16,
                       borderRadius: 20,
-                      flexDirection: "row",
+                      backgroundColor: isSelected
+                        ? theme.foreground
+                        : theme.card,
                       alignItems: "center",
-                      justifyContent: "space-between",
-                      backgroundColor: isDark ? "#222" : "#F0F0F0",
                     }}
                   >
                     <Text
                       style={{
                         fontSize: 14,
-                        color: theme.foreground,
-                        opacity: themeMode === option.value ? 1 : 0.5,
+                        color: isSelected ? theme.background : theme.foreground,
+                        opacity: isSelected ? 1 : 0.7,
                         ...fonts.medium,
                       }}
                     >
-                      {option.label}
+                      {lang.name}
                     </Text>
                   </Pressable>
-                </Animated.View>
-              ))}
+                );
+              })}
             </View>
 
-            {/* Feedback Section */}
-            <Text
-              style={{
-                fontSize: 12,
-                color: theme.foreground,
-                opacity: 0.4,
-                marginBottom: 8,
-                ...fonts.regular,
-              }}
-            >
-              Feedback
-            </Text>
+            {/* Theme Section */}
+            <SectionLabel>{t("theme")}</SectionLabel>
 
-            <Pressable
-              onPress={() => setHapticsEnabled(!hapticsEnabled)}
+            <View
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingVertical: 10,
-                paddingHorizontal: 12,
-                borderRadius: 10,
-                backgroundColor: hapticsEnabled
-                  ? isDark
-                    ? "#222"
-                    : "#F0F0F0"
-                  : "transparent",
-                marginBottom: 4,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 15,
-                  color: theme.foreground,
-                  ...fonts.regular,
-                }}
-              >
-                Vibration
-              </Text>
-              {hapticsEnabled && (
-                <Text
-                  style={{
-                    fontSize: 15,
-                    color: theme.foreground,
-                    ...fonts.regular,
-                  }}
-                >
-                  ✓
-                </Text>
-              )}
-            </Pressable>
-
-            <Pressable
-              onPress={() => setShakeToClearEnabled(!shakeToClearEnabled)}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingVertical: 10,
-                paddingHorizontal: 12,
-                borderRadius: 10,
-                backgroundColor: shakeToClearEnabled
-                  ? isDark
-                    ? "#222"
-                    : "#F0F0F0"
-                  : "transparent",
+                backgroundColor: theme.surfaceAlt,
+                borderRadius: 24,
+                padding: 4,
                 marginBottom: 20,
               }}
             >
-              <Text
+              <View
                 style={{
-                  fontSize: 15,
-                  color: theme.foreground,
-                  ...fonts.regular,
+                  flexDirection: "row",
+                  gap: 4,
                 }}
               >
-                Shake to clear
-              </Text>
-              {shakeToClearEnabled && (
-                <Text
-                  style={{
-                    fontSize: 15,
-                    color: theme.foreground,
-                    ...fonts.regular,
-                  }}
-                >
-                  ✓
-                </Text>
-              )}
-            </Pressable>
+                {themeOptions.map((option, index) => (
+                  <Animated.View
+                    key={option.value}
+                    style={{
+                      flex: themeAnimation.interpolate({
+                        inputRange: [0, 1, 2],
+                        outputRange: index === 0 ? [2, 1, 1] : index === 1 ? [1, 2, 1] : [1, 1, 2],
+                      }),
+                    }}
+                  >
+                    <Pressable
+                      onPress={() => setThemeMode(option.value)}
+                      style={{
+                        paddingVertical: 10,
+                        paddingHorizontal: 16,
+                        borderRadius: 20,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        backgroundColor: themeMode === option.value
+                          ? theme.cardActive
+                          : "transparent",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          color: theme.foreground,
+                          opacity: themeMode === option.value ? 1 : 0.5,
+                          ...fonts.medium,
+                        }}
+                      >
+                        {option.label}
+                      </Text>
+                    </Pressable>
+                  </Animated.View>
+                ))}
+              </View>
+            </View>
+
+            {/* Feedback Section */}
+            <SectionLabel>{t("feedback")}</SectionLabel>
+
+            <View style={{ marginBottom: 4 }}>
+              <ToggleRow
+                label={t("vibration")}
+                isEnabled={hapticsEnabled}
+                onToggle={() => setHapticsEnabled(!hapticsEnabled)}
+              />
+            </View>
+
+            <View style={{ marginBottom: 20 }}>
+              <ToggleRow
+                label={t("shakeToClear")}
+                isEnabled={shakeToClearEnabled}
+                onToggle={() => setShakeToClearEnabled(!shakeToClearEnabled)}
+              />
+            </View>
 
             {/* Other options */}
             <Pressable
@@ -254,6 +231,8 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
                 paddingVertical: 10,
                 paddingHorizontal: 12,
                 marginBottom: 20,
+                borderRadius: 20,
+                backgroundColor: theme.card,
               }}
             >
               <Text
@@ -263,22 +242,12 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
                   ...fonts.regular,
                 }}
               >
-                Show Onboarding
+                {t("showOnboarding")}
               </Text>
             </Pressable>
 
             {/* Delete Data Section */}
-            <Text
-              style={{
-                fontSize: 12,
-                color: theme.foreground,
-                opacity: 0.4,
-                marginBottom: 8,
-                ...fonts.regular,
-              }}
-            >
-              Data
-            </Text>
+            <SectionLabel>{t("data")}</SectionLabel>
 
             {!showDeleteConfirm ? (
               <Pressable
@@ -292,11 +261,11 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
                 <Text
                   style={{
                     fontSize: 15,
-                    color: "#FF4444",
+                    color: colors.danger,
                     ...fonts.regular,
                   }}
                 >
-                  Delete All Data
+                  {t("deleteAllData")}
                 </Text>
               </Pressable>
             ) : (
@@ -310,12 +279,12 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
                     ...fonts.regular,
                   }}
                 >
-                  This will delete all your notes permanently.
+                  {t("deleteAllDataConfirm")}
                 </Text>
                 <View style={{ flexDirection: "row", gap: 20 }}>
                   <Pressable onPress={() => setShowDeleteConfirm(false)}>
                     <Text style={{ color: theme.foreground, fontSize: 15, ...fonts.regular }}>
-                      Cancel
+                      {t("cancel")}
                     </Text>
                   </Pressable>
                   <Pressable
@@ -325,8 +294,8 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
                       onClose();
                     }}
                   >
-                    <Text style={{ color: "#FF4444", fontSize: 15, ...fonts.regular }}>
-                      Delete
+                    <Text style={{ color: colors.danger, fontSize: 15, ...fonts.regular }}>
+                      {t("delete")}
                     </Text>
                   </Pressable>
                 </View>
@@ -352,7 +321,7 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
                 ...fonts.regular,
               }}
             >
-              Done
+              {t("done")}
             </Text>
           </Pressable>
         </View>

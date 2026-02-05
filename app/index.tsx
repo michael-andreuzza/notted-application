@@ -1,14 +1,21 @@
 import { useState, useMemo } from "react";
-import { View, Text, Pressable, Dimensions, ScrollView, Image } from "react-native";
+import { View, Text, Pressable, Dimensions, ScrollView, TextInput } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useNoteStore, Note } from "@/stores/noteStore";
 import { fonts } from "@/constants/theme";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useHaptics } from "@/hooks/useHaptics";
 import { PaywallModal } from "@/components/PaywallModal";
-import { SettingsModal } from "@/components/SettingsModal";
 import { OnboardingModal } from "@/components/OnboardingModal";
+import { TemplatePickerModal } from "@/components/TemplatePickerModal";
 import { MoreIcon } from "@/components/icons/MoreIcon";
+import { SearchIcon } from "@/components/icons/SearchIcon";
+import { CloseIcon } from "@/components/icons/CloseIcon";
+import { CheckIcon } from "@/components/icons/CheckIcon";
+import { PlusIcon } from "@/components/icons/PlusIcon";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { EmptyState } from "@/components/EmptyState";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -41,13 +48,13 @@ const getDateGroup = (timestamp: number): DateGroup => {
 
 const DATE_GROUP_ORDER: DateGroup[] = ["today", "yesterday", "this week", "last week", "this month", "older"];
 
-const DATE_GROUP_LABELS: Record<DateGroup, string> = {
-  "today": "Today",
-  "yesterday": "Yesterday",
-  "this week": "This Week",
-  "last week": "Last Week",
-  "this month": "This Month",
-  "older": "Older",
+const DATE_GROUP_KEYS: Record<DateGroup, string> = {
+  "today": "today",
+  "yesterday": "yesterday",
+  "this week": "thisWeek",
+  "last week": "lastWeek",
+  "this month": "thisMonth",
+  "older": "older",
 };
 
 interface GroupedNotes {
@@ -58,19 +65,49 @@ interface GroupedNotes {
 export default function HomeScreen() {
   const router = useRouter();
   const { isDark, theme } = useAppTheme();
+  const { t } = useTranslation();
 
-  const { notes, setActiveNote, createNote, isPremium, hasSeenOnboarding, setHasSeenOnboarding } = useNoteStore();
+  const { notes, setActiveNote, createNote, createNoteFromTemplate, deleteNote, isPremium, hasSeenOnboarding, setHasSeenOnboarding } = useNoteStore();
   const { impact, notification, ImpactStyle, NotificationType } = useHaptics();
   const [showPaywall, setShowPaywall] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  
   const handleCloseOnboarding = () => {
     setHasSeenOnboarding(true);
   };
 
-  // Group notes by date
+  const handleLongPress = (noteId: string) => {
+    impact(ImpactStyle.Medium);
+    setNoteToDelete(noteId);
+  };
+
+  const handleConfirmDelete = () => {
+    if (noteToDelete) {
+      deleteNote(noteToDelete);
+      notification(NotificationType.Success);
+      setNoteToDelete(null);
+    }
+  };
+
+  // Group notes by date (with search filtering)
   const groupedNotes = useMemo((): GroupedNotes[] => {
+    // Filter notes by search query
+    const query = searchQuery.toLowerCase().trim();
+    const filteredNotes = query
+      ? notes.filter((note) => {
+          // Match title
+          if (note.title.toLowerCase().includes(query)) return true;
+          // Match content
+          if (note.content.toLowerCase().includes(query)) return true;
+          return false;
+        })
+      : notes;
+
     // Sort notes by updatedAt descending (most recent first)
-    const sortedNotes = [...notes].sort((a, b) => b.updatedAt - a.updatedAt);
+    const sortedNotes = [...filteredNotes].sort((a, b) => b.updatedAt - a.updatedAt);
     
     // Group notes by date category
     const groups: Map<DateGroup, Note[]> = new Map();
@@ -90,7 +127,7 @@ export default function HomeScreen() {
         group,
         notes: groups.get(group)!,
       }));
-  }, [notes]);
+  }, [notes, searchQuery]);
 
   const handleNotePress = (noteId: string) => {
     setActiveNote(noteId);
@@ -104,8 +141,20 @@ export default function HomeScreen() {
       return;
     }
     
+    // Show template picker for all users
+    setShowTemplatePicker(true);
+  };
+
+  const handleStartEmpty = () => {
     impact(ImpactStyle.Medium);
     const newNoteId = createNote();
+    setActiveNote(newNoteId);
+    router.push("/note");
+  };
+
+  const handleSelectTemplate = (templateId: string, builtInContent?: { title: string; content: string }) => {
+    impact(ImpactStyle.Medium);
+    const newNoteId = createNoteFromTemplate(templateId, builtInContent);
     setActiveNote(newNoteId);
     router.push("/note");
   };
@@ -120,59 +169,82 @@ export default function HomeScreen() {
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            paddingHorizontal: 16,
+            paddingHorizontal: 24,
             paddingVertical: 8,
             marginBottom: 16,
           }}
         >
-          {/* Logo and name */}
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image
-              source={require("@/assets/icon.png")}
-              style={{
-                width: 16,
-                height: 16,
-                marginRight: 6,
-                opacity: isDark ? 0.7 : 0.6,
-              }}
-              resizeMode="contain"
-            />
-            <Text
-              style={{
-                fontSize: 16,
-                color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
-                lineHeight: 16,
-                ...fonts.regular,
-              }}
-            >
-              notted
-            </Text>
-          </View>
+          {/* App name */}
+          <Text
+            style={{
+              fontSize: 28,
+              color: theme.foreground,
+              ...fonts.regular,
+            }}
+          >
+            notted
+          </Text>
 
           {/* Right actions */}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-            {/* New Note */}
-            <Pressable onPress={handleNewNote}>
-              <Text
-                style={{
-                  fontSize: 16,
-                  color: theme.foreground,
-                  ...fonts.regular,
-                }}
-              >
-                New note
-              </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            {/* Search */}
+            <Pressable 
+              onPress={() => {
+                setShowSearch(!showSearch);
+                if (showSearch) setSearchQuery("");
+              }}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <SearchIcon color={theme.foreground} size={20} />
             </Pressable>
 
             {/* Settings - 3 dots icon */}
             <Pressable
-              onPress={() => setShowSettings(true)}
+              onPress={() => router.push("/settings")}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
               <MoreIcon color={theme.foreground} size={24} />
             </Pressable>
           </View>
         </View>
+
+        {/* Search Input */}
+        {showSearch && (
+          <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                borderBottomWidth: 1,
+                borderBottomColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+              }}
+            >
+              <TextInput
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder={t("search")}
+                placeholderTextColor={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"}
+                autoFocus
+                style={{
+                  flex: 1,
+                  fontSize: 16,
+                  color: theme.foreground,
+                  paddingVertical: 12,
+                  ...fonts.regular,
+                }}
+              />
+              <Pressable
+                onPress={() => {
+                  setShowSearch(false);
+                  setSearchQuery("");
+                }}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <CloseIcon color={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"} size={18} />
+              </Pressable>
+            </View>
+          </View>
+        )}
 
         {/* Notes List */}
         <ScrollView
@@ -185,14 +257,16 @@ export default function HomeScreen() {
               {/* Section Header */}
               <Text
                 style={{
-                  fontSize: 12,
-                  color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)",
-                  marginTop: groupIndex === 0 ? 0 : 24,
-                  marginBottom: 12,
-                  ...fonts.regular,
+                  fontSize: 40,
+                  color: theme.foreground,
+                  letterSpacing: -1.5,
+                  textTransform: "uppercase",
+                  marginTop: groupIndex === 0 ? 0 : 48,
+                  marginBottom: 24,
+                  ...fonts.semibold,
                 }}
               >
-                {DATE_GROUP_LABELS[group]}
+                {t(DATE_GROUP_KEYS[group])}
               </Text>
               
               {/* Notes in this section */}
@@ -200,29 +274,21 @@ export default function HomeScreen() {
                 <Pressable
                   key={note.id}
                   onPress={() => handleNotePress(note.id)}
+                  onLongPress={() => handleLongPress(note.id)}
+                  delayLongPress={500}
                   style={{ marginBottom: 28 }}
                 >
-                      <Text
-                        style={{
-                          fontSize: 14,
-                          color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)",
-                          ...fonts.regular,
-                        }}
-                        >
-                        {note.mode === "list" ? "List" : "Text"}
-                      </Text>
                   <Text
                     style={{
                       fontSize: 28,
                       color: theme.foreground,
-                      marginTop: 8,
                       maxWidth: SCREEN_WIDTH - 48,
-                      ...fonts.regular,
+                      ...fonts.medium,
                     }}
                     numberOfLines={1}
                     ellipsizeMode="tail"
                   >
-                    {note.title || "untitled"}
+                    {note.title || t("untitled")}
                   </Text>
                 </Pressable>
               ))}
@@ -230,27 +296,13 @@ export default function HomeScreen() {
           ))}
 
           {/* Empty state */}
-          {notes.length === 0 && (
+          {groupedNotes.length === 0 && (
             <View style={{ marginTop: 40 }}>
-              <Text
-                style={{
-                  fontSize: 28,
-                  color: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)",
-                  ...fonts.regular,
-                }}
-              >
-                no notes yet
-              </Text>
-              <Text
-                style={{
-                  fontSize: 16,
-                  color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)",
-                  marginTop: 8,
-                  ...fonts.regular,
-                }}
-              >
-                tap "New note" to get started
-              </Text>
+              <EmptyState
+                title={searchQuery ? t("noResults") : t("noNotesYet")}
+                subtitle={searchQuery ? undefined : t("tapToStart")}
+                onAction={searchQuery ? undefined : handleNewNote}
+              />
             </View>
           )}
 
@@ -262,51 +314,173 @@ export default function HomeScreen() {
             onPress={() => setShowPaywall(true)}
             style={{
               position: "absolute",
-              bottom: 24,
+              bottom: 48,
               left: 24,
               right: 24,
-              padding: 16,
-              backgroundColor: isDark ? "#1A1A1A" : "#F5F5F5",
-              borderRadius: 12,
+              padding: 24,
+              backgroundColor: theme.surface,
+              borderRadius: 24,
             }}
           >
-            <Text
+            {/* Table Header */}
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
+              <View style={{ flex: 1 }} />
+              <Text
+                style={{
+                  width: 70,
+                  textAlign: "center",
+                  fontSize: 13,
+                  color: theme.foreground,
+                  opacity: 0.4,
+                  ...fonts.regular,
+                }}
+              >
+                {t("free")}
+              </Text>
+              <View
+                style={{
+                  width: 80,
+                  paddingVertical: 8,
+                  borderRadius: 20,
+                  backgroundColor: theme.foreground,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: theme.background,
+                    ...fonts.medium,
+                  }}
+                >
+                  {t("premium")}
+                </Text>
+              </View>
+            </View>
+
+            {/* Feature Rows */}
+            {[
+              { label: t("templates"), free: false, premium: true },
+              { label: t("shakeGesture"), free: false, premium: true },
+              { label: t("darkMode"), free: false, premium: true },
+              { label: t("unlimitedNotesFeatureShort"), free: false, premium: true },
+            ].map((feature, index) => (
+              <View
+                key={index}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 12,
+                  borderTopWidth: index > 0 ? 1 : 0,
+                  borderTopColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                }}
+              >
+                <Text
+                  style={{
+                    flex: 1,
+                    fontSize: 15,
+                    color: theme.foreground,
+                    ...fonts.regular,
+                  }}
+                >
+                  {feature.label}
+                </Text>
+                <View style={{ width: 70, alignItems: "center" }}>
+                  {feature.free && (
+                    <CheckIcon color={theme.foreground} size={18} />
+                  )}
+                </View>
+                <View style={{ width: 80, alignItems: "center" }}>
+                  {feature.premium && (
+                    <CheckIcon color={theme.foreground} size={18} />
+                  )}
+                </View>
+              </View>
+            ))}
+
+            {/* CTA Button */}
+            <View
               style={{
-                fontSize: 14,
-                color: theme.foreground,
-                ...fonts.regular,
+                marginTop: 20,
+                backgroundColor: theme.foreground,
+                paddingVertical: 16,
+                borderRadius: 16,
+                alignItems: "center",
               }}
             >
-              Unlimited notes
-            </Text>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: theme.background,
+                  ...fonts.semibold,
+                }}
+              >
+                {t("unlockPremium")} — $4.99
+              </Text>
+            </View>
+            
             <Text
               style={{
+                marginTop: 12,
                 fontSize: 13,
                 color: theme.foreground,
-                opacity: 0.5,
-                marginTop: 4,
+                opacity: 0.4,
+                textAlign: "center",
                 ...fonts.regular,
               }}
             >
-              Upgrade for $4.99 — lifetime access
+              {t("oneTimePurchase")}
             </Text>
           </Pressable>
         )}
 
+        {/* Floating Add Button for Premium users (only when there are notes) */}
+        {isPremium && notes.length > 0 && (
+          <Pressable
+            onPress={handleNewNote}
+            style={{
+              position: "absolute",
+              bottom: 48,
+              right: 24,
+              width: 56,
+              height: 56,
+              borderRadius: 28,
+              backgroundColor: theme.foreground,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <PlusIcon color={theme.background} size={24} />
+          </Pressable>
+        )}
+
       </View>
+
+      {/* Delete confirmation */}
+      <ConfirmDialog
+        visible={!!noteToDelete}
+        message={t("deleteNote")}
+        cancelLabel={t("cancel")}
+        confirmLabel={t("delete")}
+        onCancel={() => setNoteToDelete(null)}
+        onConfirm={handleConfirmDelete}
+      />
 
       {/* Modals */}
       <PaywallModal 
         visible={showPaywall} 
         onClose={() => setShowPaywall(false)} 
       />
-      <SettingsModal
-        visible={showSettings}
-        onClose={() => setShowSettings(false)}
-      />
       <OnboardingModal
         visible={!hasSeenOnboarding}
         onClose={handleCloseOnboarding}
+      />
+      <TemplatePickerModal
+        visible={showTemplatePicker}
+        onClose={() => setShowTemplatePicker(false)}
+        onSelectTemplate={handleSelectTemplate}
+        onStartEmpty={handleStartEmpty}
       />
     </View>
   );

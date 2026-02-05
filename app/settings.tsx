@@ -1,260 +1,348 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   Pressable,
-  useColorScheme,
-  SafeAreaView,
-  TextInput,
+  ScrollView,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useNoteStore } from "@/stores/noteStore";
-import { colors } from "@/constants/theme";
+import { useTranslation } from "react-i18next";
+import { colors, fonts } from "@/constants/theme";
+import { useNoteStore, ThemeMode, LanguageCode } from "@/stores/noteStore";
+import { useAppTheme } from "@/hooks/useAppTheme";
+import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon";
+import { SectionLabel } from "@/components/SectionLabel";
+import { ToggleRow } from "@/components/ToggleRow";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { LANGUAGES } from "@/i18n";
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const theme = isDark ? colors.dark : colors.light;
+  const { t, i18n } = useTranslation();
+  const { theme } = useAppTheme();
+  
+  const {
+    themeMode,
+    setThemeMode,
+    language,
+    setLanguage,
+    hapticsEnabled,
+    setHapticsEnabled,
+    shakeToClearEnabled,
+    setShakeToClearEnabled,
+    setHasSeenOnboarding,
+    resetAllData,
+  } = useNoteStore();
+  
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const { drawerPeekHeight, setDrawerPeekHeight, isPremium, notes } =
-    useNoteStore();
+  const themeOptions: { value: ThemeMode; label: string }[] = [
+    { value: "system", label: t("system") },
+    { value: "light", label: t("light") },
+    { value: "dark", label: t("dark") },
+  ];
+
+  const handleLanguageChange = (langCode: LanguageCode) => {
+    setLanguage(langCode);
+    i18n.changeLanguage(langCode);
+  };
+
+  const handleDeleteAllData = () => {
+    resetAllData();
+    setShowDeleteConfirm(false);
+    router.replace("/");
+  };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
-      <View style={{ flex: 1, padding: 20 }}>
-        {/* Header */}
+    <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: 50 }}>
+      {/* Header */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingHorizontal: 16,
+          paddingVertical: 8,
+          marginBottom: 16,
+        }}
+      >
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <ArrowLeftIcon color={theme.foreground} size={24} />
+        </Pressable>
+
+        <Text
+          style={{
+            fontSize: 18,
+            color: theme.foreground,
+            ...fonts.medium,
+          }}
+        >
+          {t("settings")}
+        </Text>
+
+        {/* Spacer for centering */}
+        <View style={{ width: 24 }} />
+      </View>
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Language Section */}
+        <SectionLabel>{t("language")}</SectionLabel>
+
         <View
           style={{
             flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 32,
+            gap: 8,
+            marginBottom: 24,
           }}
         >
-          <Pressable
-            onPress={() => router.back()}
-            style={{ padding: 8, marginLeft: -8 }}
-          >
-            <Text style={{ color: theme.foreground, fontSize: 16 }}>
-              ← Back
-            </Text>
-          </Pressable>
-          <Text
+          {LANGUAGES.map((lang) => {
+            const isSelected = (language || i18n.language) === lang.code;
+            return (
+              <Pressable
+                key={lang.code}
+                onPress={() => handleLanguageChange(lang.code as LanguageCode)}
+                style={{
+                  flex: 1,
+                  paddingVertical: 10,
+                  borderRadius: 20,
+                  backgroundColor: isSelected
+                    ? theme.foreground
+                    : theme.card,
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: isSelected ? theme.background : theme.foreground,
+                    opacity: isSelected ? 1 : 0.7,
+                    ...fonts.medium,
+                  }}
+                >
+                  {lang.name}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {/* Theme Section */}
+        <SectionLabel>{t("theme")}</SectionLabel>
+
+        <View
+          style={{
+            backgroundColor: theme.surfaceAlt,
+            borderRadius: 24,
+            padding: 4,
+            marginBottom: 24,
+          }}
+        >
+          <View
             style={{
-              flex: 1,
-              textAlign: "center",
-              fontSize: 18,
-              fontWeight: "600",
-              color: theme.foreground,
-              marginRight: 40,
+              flexDirection: "row",
+              gap: 4,
             }}
           >
-            Settings
-          </Text>
-        </View>
-
-        {/* Settings sections */}
-        <View style={{ gap: 24 }}>
-          {/* Drawer Height */}
-          <View>
-            <Text
-              style={{
-                fontSize: 14,
-                fontWeight: "600",
-                color: theme.foreground,
-                opacity: 0.6,
-                marginBottom: 12,
-                textTransform: "uppercase",
-                letterSpacing: 1,
-              }}
-            >
-              Drawer
-            </Text>
-            <View
-              style={{
-                backgroundColor: isDark ? "#111" : "#F5F5F5",
-                borderRadius: 12,
-                padding: 16,
-              }}
-            >
-              <Text
+            {themeOptions.map((option) => (
+              <Pressable
+                key={option.value}
+                onPress={() => setThemeMode(option.value)}
                 style={{
-                  fontSize: 16,
-                  color: theme.foreground,
-                  marginBottom: 12,
-                }}
-              >
-                Peek Height
-              </Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 8,
-                }}
-              >
-                {[60, 80, 120, 160].map((height) => (
-                  <Pressable
-                    key={height}
-                    onPress={() => setDrawerPeekHeight(height)}
-                    style={{
-                      flex: 1,
-                      paddingVertical: 10,
-                      borderRadius: 8,
-                      backgroundColor:
-                        drawerPeekHeight === height
-                          ? theme.foreground
-                          : isDark
-                          ? "#222"
-                          : "#E5E5E5",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color:
-                          drawerPeekHeight === height
-                            ? theme.background
-                            : theme.foreground,
-                        fontSize: 14,
-                        fontWeight: drawerPeekHeight === height ? "600" : "400",
-                      }}
-                    >
-                      {height}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-          </View>
-
-          {/* Premium Status */}
-          <View>
-            <Text
-              style={{
-                fontSize: 14,
-                fontWeight: "600",
-                color: theme.foreground,
-                opacity: 0.6,
-                marginBottom: 12,
-                textTransform: "uppercase",
-                letterSpacing: 1,
-              }}
-            >
-              Premium
-            </Text>
-            <View
-              style={{
-                backgroundColor: isDark ? "#111" : "#F5F5F5",
-                borderRadius: 12,
-                padding: 16,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
+                  flex: 1,
+                  paddingVertical: 10,
+                  paddingHorizontal: 16,
+                  borderRadius: 20,
                   alignItems: "center",
-                  marginBottom: 8,
+                  backgroundColor: themeMode === option.value
+                    ? theme.cardActive
+                    : "transparent",
                 }}
               >
-                <Text style={{ fontSize: 16, color: theme.foreground }}>
-                  Status
-                </Text>
                 <Text
                   style={{
-                    fontSize: 16,
-                    color: isPremium ? "#22C55E" : theme.foreground,
-                    fontWeight: "600",
-                  }}
-                >
-                  {isPremium ? "Premium" : "Free"}
-                </Text>
-              </View>
-              <Text
-                style={{
-                  fontSize: 14,
-                  color: theme.foreground,
-                  opacity: 0.5,
-                }}
-              >
-                {isPremium
-                  ? "Unlimited notes enabled"
-                  : `${notes.length}/1 notes used`}
-              </Text>
-              {!isPremium && (
-                <Pressable
-                  onPress={() => {
-                    router.push("/paywall");
-                  }}
-                  style={{
-                    marginTop: 16,
-                    backgroundColor: theme.foreground,
-                    paddingVertical: 12,
-                    paddingHorizontal: 20,
-                    borderRadius: 8,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: theme.background,
-                      fontSize: 16,
-                      fontWeight: "600",
-                    }}
-                  >
-                    Unlock Premium — $4.99
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-          </View>
-
-          {/* About */}
-          <View>
-            <Text
-              style={{
-                fontSize: 14,
-                fontWeight: "600",
-                color: theme.foreground,
-                opacity: 0.6,
-                marginBottom: 12,
-                textTransform: "uppercase",
-                letterSpacing: 1,
-              }}
-            >
-              About
-            </Text>
-            <View
-              style={{
-                backgroundColor: isDark ? "#111" : "#F5F5F5",
-                borderRadius: 12,
-                padding: 16,
-                gap: 12,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text style={{ fontSize: 16, color: theme.foreground }}>
-                  Version
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 16,
+                    fontSize: 14,
                     color: theme.foreground,
-                    opacity: 0.5,
+                    opacity: themeMode === option.value ? 1 : 0.5,
+                    ...fonts.medium,
                   }}
                 >
-                  1.0.0
+                  {option.label}
                 </Text>
-              </View>
-            </View>
+              </Pressable>
+            ))}
           </View>
         </View>
-      </View>
-    </SafeAreaView>
+
+        {/* Feedback Section */}
+        <SectionLabel>{t("feedback")}</SectionLabel>
+
+        <View style={{ marginBottom: 4 }}>
+          <ToggleRow
+            label={t("vibration")}
+            isEnabled={hapticsEnabled}
+            onToggle={() => setHapticsEnabled(!hapticsEnabled)}
+          />
+        </View>
+
+        <View style={{ marginBottom: 24 }}>
+          <ToggleRow
+            label={t("shakeToClear")}
+            isEnabled={shakeToClearEnabled}
+            onToggle={() => setShakeToClearEnabled(!shakeToClearEnabled)}
+          />
+        </View>
+
+        {/* Help Section */}
+        <SectionLabel>{t("help")}</SectionLabel>
+
+        <Pressable
+          onPress={() => {
+            setHasSeenOnboarding(false);
+            router.replace("/");
+          }}
+          style={{
+            paddingVertical: 10,
+            paddingHorizontal: 12,
+            marginBottom: 24,
+            borderRadius: 20,
+            backgroundColor: theme.card,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 15,
+              color: theme.foreground,
+              ...fonts.regular,
+            }}
+          >
+            {t("showOnboarding")}
+          </Text>
+        </Pressable>
+
+        {/* Legal Section */}
+        <SectionLabel>{t("legal")}</SectionLabel>
+
+        <View style={{ gap: 4, marginBottom: 24 }}>
+          <Pressable
+            onPress={() => Linking.openURL("https://notted.app/legal/privacy/")}
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              borderRadius: 20,
+              backgroundColor: theme.card,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 15,
+                color: theme.foreground,
+                ...fonts.regular,
+              }}
+            >
+              {t("privacyPolicy")}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => Linking.openURL("https://notted.app/legal/terms/")}
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              borderRadius: 20,
+              backgroundColor: theme.card,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 15,
+                color: theme.foreground,
+                ...fonts.regular,
+              }}
+            >
+              {t("termsOfService")}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => Linking.openURL("https://notted.app/legal/faq/")}
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              borderRadius: 20,
+              backgroundColor: theme.card,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 15,
+                color: theme.foreground,
+                ...fonts.regular,
+              }}
+            >
+              {t("faq")}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => Linking.openURL("https://notted.app/support/")}
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              borderRadius: 20,
+              backgroundColor: theme.card,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 15,
+                color: theme.foreground,
+                ...fonts.regular,
+              }}
+            >
+              {t("support")}
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* Data Section */}
+        <SectionLabel>{t("data")}</SectionLabel>
+
+        <Pressable
+          onPress={() => setShowDeleteConfirm(true)}
+          style={{
+            paddingVertical: 10,
+            paddingHorizontal: 12,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 15,
+              color: colors.danger,
+              ...fonts.regular,
+            }}
+          >
+            {t("deleteAllData")}
+          </Text>
+        </Pressable>
+      </ScrollView>
+
+      {/* Delete confirmation dialog */}
+      <ConfirmDialog
+        visible={showDeleteConfirm}
+        message={t("deleteAllDataConfirm")}
+        cancelLabel={t("cancel")}
+        confirmLabel={t("delete")}
+        onCancel={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteAllData}
+      />
+    </View>
   );
 }

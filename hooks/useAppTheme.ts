@@ -13,5 +13,6 @@ export function useAppTheme() {
   return {
     isDark,
     theme: isDark ? colors.dark : colors.light,
+    colors, // expose full colors object for semantic colors (danger, success)
   };
 }

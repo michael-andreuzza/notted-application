@@ -52,8 +52,8 @@ export function ChecklistItem({
       style={{
         flexDirection: "row",
         alignItems: "center",
-        paddingVertical: 8,
-        marginBottom: 4,
+        paddingVertical: 6,
+        marginBottom: 2,
       }}
     >
       {/* Checkbox */}
@@ -64,17 +64,15 @@ export function ChecklistItem({
         }}
         hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         style={{
-          width: 22,
-          height: 22,
+          width: 24,
+          height: 24,
           borderRadius: 6,
           borderWidth: 2,
           borderColor: item.checked
             ? theme.foreground
-            : isDark
-            ? "#444"
-            : "#CCC",
+            : theme.disabled,
           backgroundColor: item.checked ? theme.foreground : "transparent",
-          marginRight: 12,
+          marginRight: 14,
           alignItems: "center",
           justifyContent: "center",
         }}
@@ -83,7 +81,7 @@ export function ChecklistItem({
           <Text
             style={{
               color: theme.background,
-              fontSize: 12,
+              fontSize: 14,
               ...fonts.regular,
             }}
           >
@@ -106,28 +104,26 @@ export function ChecklistItem({
           // @ts-ignore - web only
           style={{
             flex: 1,
-            fontSize: 16,
+            fontSize: 28,
             color: item.checked 
               ? (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.25)")
-              : (isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)"),
+              : theme.foreground,
             padding: 0,
             textDecorationLine: item.checked ? "line-through" : "none",
             outlineStyle: "none",
-            textTransform: "capitalize",
-            ...fonts.regular,
+            ...fonts.medium,
           }}
         />
       ) : (
         <Pressable onPress={handlePress} style={{ flex: 1 }}>
           <Text
             style={{
-              fontSize: 16,
+              fontSize: 28,
               color: item.checked 
                 ? (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.25)")
-                : (isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)"),
+                : theme.foreground,
               textDecorationLine: item.checked ? "line-through" : "none",
-              textTransform: "capitalize",
-              ...fonts.regular,
+              ...fonts.medium,
             }}
           >
             {item.text}

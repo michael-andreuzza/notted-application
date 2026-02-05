@@ -1,15 +1,13 @@
 import React, { useState } from "react";
 import { View, Text, Pressable, Modal, Linking, TextInput, ActivityIndicator } from "react-native";
-import { fonts } from "@/constants/theme";
+import { useTranslation } from "react-i18next";
+import { fonts, colors } from "@/constants/theme";
 import { useAppTheme } from "@/hooks/useAppTheme";
-import { CloseIcon } from "@/components/icons/CloseIcon";
 import { useNoteStore } from "@/stores/noteStore";
 import { RESTORE_ENDPOINT } from "@/constants/supabase";
+import { CloseIcon } from "@/components/icons/CloseIcon";
 
 const POLAR_CHECKOUT_URL = "https://buy.polar.sh/polar_cl_qCd3hFE0efbUAbSDO16d4aCtF8BJzlGCRQf8u40mrSz";
-
-const CARD_MARGIN_X = 12;
-const CARD_MARGIN_BOTTOM = 12;
 
 interface PaywallModalProps {
   visible: boolean;
@@ -18,6 +16,7 @@ interface PaywallModalProps {
 
 export function PaywallModal({ visible, onClose }: PaywallModalProps) {
   const { isDark, theme } = useAppTheme();
+  const { t } = useTranslation();
   const { setPremium, purchaseEmail } = useNoteStore();
   
   const [showRestoreInput, setShowRestoreInput] = useState(false);
@@ -88,10 +87,10 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
         <View
           style={{
             position: "absolute",
-            bottom: CARD_MARGIN_BOTTOM,
-            left: CARD_MARGIN_X,
-            right: CARD_MARGIN_X,
-            backgroundColor: isDark ? "#1A1A1A" : "#FFFFFF",
+            bottom: 12,
+            left: 12,
+            right: 12,
+            backgroundColor: theme.surface,
             borderRadius: 20,
             padding: 20,
           }}
@@ -116,10 +115,10 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
               fontSize: 20,
               color: theme.foreground,
               marginBottom: 4,
-              ...fonts.regular,
+              ...fonts.medium,
             }}
           >
-            Unlock Premium
+            {t("unlockPremium")}
           </Text>
 
           {/* Subtitle */}
@@ -132,24 +131,24 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
               ...fonts.regular,
             }}
           >
-            One-time purchase, forever yours
+            {t("oneTimePurchase")}
           </Text>
 
           {/* Features */}
           <View style={{ marginBottom: 20, gap: 12 }}>
             <FeatureRow
-              title="Unlimited Notes"
-              description="Create as many lists as you need"
+              title={t("unlimitedNotesFeature")}
+              description={t("unlimitedNotesDesc")}
               theme={theme}
             />
             <FeatureRow
-              title="Offline-First"
-              description="No account, no sync, no BS"
+              title={t("offlineFirst")}
+              description={t("offlineFirstDesc")}
               theme={theme}
             />
             <FeatureRow
-              title="Pay Once, Own Forever"
-              description="No subscriptions, no ads, no tracking"
+              title={t("payOnce")}
+              description={t("payOnceDesc")}
               theme={theme}
             />
           </View>
@@ -157,7 +156,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
           {/* Price box */}
           <View
             style={{
-              backgroundColor: isDark ? "#222" : "#F5F5F5",
+              backgroundColor: theme.card,
               borderRadius: 10,
               padding: 14,
               marginBottom: 16,
@@ -177,7 +176,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                   ...fonts.regular,
                 }}
               >
-                Lifetime access
+                {t("lifetimeAccess")}
               </Text>
               <Text
                 style={{
@@ -209,7 +208,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                 ...fonts.regular,
               }}
             >
-              Purchase Now
+              {t("purchaseNow")}
             </Text>
           </Pressable>
 
@@ -222,13 +221,13 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                   setEmail(text);
                   setRestoreError(null);
                 }}
-                placeholder="Enter your purchase email"
-                placeholderTextColor={isDark ? "#666" : "#999"}
+                placeholder={t("enterEmail")}
+                placeholderTextColor={theme.placeholder}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
                 style={{
-                  backgroundColor: isDark ? "#222" : "#F5F5F5",
+                  backgroundColor: theme.card,
                   borderRadius: 10,
                   padding: 14,
                   color: theme.foreground,
@@ -239,7 +238,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
               {restoreError && (
                 <Text
                   style={{
-                    color: "#FF4444",
+                    color: colors.danger,
                     fontSize: 13,
                     marginTop: 8,
                     ...fonts.regular,
@@ -259,7 +258,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                     paddingVertical: 12,
                     borderRadius: 20,
                     alignItems: "center",
-                    backgroundColor: isDark ? "#222" : "#F5F5F5",
+                    backgroundColor: theme.card,
                   }}
                 >
                   <Text
@@ -269,7 +268,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                       ...fonts.regular,
                     }}
                   >
-                    Cancel
+                    {t("cancel")}
                   </Text>
                 </Pressable>
                 <Pressable
@@ -294,7 +293,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                         ...fonts.regular,
                       }}
                     >
-                      Restore
+                      {t("restore")}
                     </Text>
                   )}
                 </Pressable>
@@ -313,7 +312,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                   ...fonts.regular,
                 }}
               >
-                Restore Purchase
+                {t("restorePurchase")}
               </Text>
             </Pressable>
           )}

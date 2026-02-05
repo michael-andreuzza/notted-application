@@ -2,51 +2,66 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export interface NoteItem {
-  id: string;
-  text: string;
-  checked: boolean;
-}
-
 export interface Note {
   id: string;
   title: string;
-  items: NoteItem[];
-  mode: "list" | "text";
-  textContent: string;
+  content: string; // Lines starting with "- " are unchecked items, "+ " are checked
   createdAt: number;
   updatedAt: number;
 }
 
+export interface Template {
+  id: string;
+  title: string;
+  content: string;
+  isBuiltIn: boolean; // true = pre-made, false = user-created
+  createdAt: number;
+}
+
+// Built-in template IDs
+export const BUILT_IN_TEMPLATE_IDS = {
+  SHOPPING_LIST: "builtin-shopping",
+  WEEKLY_TASKS: "builtin-weekly",
+  MEETING_NOTES: "builtin-meeting",
+  PACKING_LIST: "builtin-packing",
+  PROJECT_CHECKLIST: "builtin-project",
+} as const;
+
 export type ThemeMode = "light" | "dark" | "system";
+export type LanguageCode = "en" | "es" | "sv" | "de";
 
 interface NoteState {
   notes: Note[];
+  templates: Template[]; // User-created templates
   activeNoteId: string | null;
   isPremium: boolean;
   purchaseEmail: string | null;
   drawerPeekHeight: number;
   themeMode: ThemeMode;
+  language: LanguageCode | null;
   hapticsEnabled: boolean;
   shakeToClearEnabled: boolean;
   hasSeenOnboarding: boolean;
 
-  // Actions
+  // Note Actions
   createNote: () => string;
+  createNoteFromTemplate: (templateId: string, builtInContent?: { title: string; content: string }) => string;
   deleteNote: (id: string) => void;
   setActiveNote: (id: string) => void;
   updateNoteTitle: (id: string, title: string) => void;
-  setNoteMode: (id: string, mode: "list" | "text") => void;
-  updateTextContent: (id: string, content: string) => void;
-  addItem: (noteId: string, text: string) => void;
-  updateItem: (noteId: string, itemId: string, text: string) => void;
-  toggleItem: (noteId: string, itemId: string) => void;
-  deleteItem: (noteId: string, itemId: string) => void;
-  reorderItems: (noteId: string, fromIndex: number, toIndex: number) => void;
+  updateContent: (id: string, content: string) => void;
+  toggleLine: (noteId: string, lineIndex: number) => void;
   clearCheckedItems: (noteId: string) => void;
+
+  // Template Actions
+  saveAsTemplate: (noteId: string) => void;
+  deleteTemplate: (id: string) => void;
+
+  // Settings Actions
   setDrawerPeekHeight: (height: number) => void;
   setPremium: (isPremium: boolean, email?: string) => void;
   setThemeMode: (mode: ThemeMode) => void;
+  setLanguage: (lang: LanguageCode | null) => void;
   setHapticsEnabled: (enabled: boolean) => void;
   setShakeToClearEnabled: (enabled: boolean) => void;
   setHasSeenOnboarding: (seen: boolean) => void;
@@ -55,15 +70,33 @@ interface NoteState {
 
 const generateId = () => Math.random().toString(36).substring(2, 15);
 
+// Helper to check if a line is a checklist item
+export const isChecklistItem = (line: string): boolean => {
+  return line.startsWith("- ") || line.startsWith("+ ");
+};
+
+export const isCheckedItem = (line: string): boolean => {
+  return line.startsWith("+ ");
+};
+
+export const getItemText = (line: string): string => {
+  if (line.startsWith("- ") || line.startsWith("+ ")) {
+    return line.substring(2);
+  }
+  return line;
+};
+
 export const useNoteStore = create<NoteState>()(
   persist(
     (set, get) => ({
       notes: [],
+      templates: [],
       activeNoteId: null,
       isPremium: false,
       purchaseEmail: null,
       drawerPeekHeight: 80,
       themeMode: "system" as ThemeMode,
+      language: null,
       hapticsEnabled: true,
       shakeToClearEnabled: true,
       hasSeenOnboarding: false,
@@ -71,7 +104,6 @@ export const useNoteStore = create<NoteState>()(
       createNote: () => {
         const { notes, isPremium } = get();
 
-        // Free users can only have 1 note
         if (!isPremium && notes.length >= 1) {
           return notes[0].id;
         }
@@ -79,9 +111,47 @@ export const useNoteStore = create<NoteState>()(
         const newNote: Note = {
           id: generateId(),
           title: "",
-          items: [],
-          mode: "list",
-          textContent: "",
+          content: "",
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+
+        set((state) => ({
+          notes: [...state.notes, newNote],
+          activeNoteId: newNote.id,
+        }));
+
+        return newNote.id;
+      },
+
+      createNoteFromTemplate: (templateId: string, builtInContent?: { title: string; content: string }) => {
+        const { notes, templates, isPremium } = get();
+
+        if (!isPremium && notes.length >= 1) {
+          return notes[0].id;
+        }
+
+        // Find template content
+        let title = "";
+        let content = "";
+
+        if (builtInContent) {
+          // Built-in template - content passed directly
+          title = builtInContent.title;
+          content = builtInContent.content;
+        } else {
+          // User template - find in templates array
+          const template = templates.find((t) => t.id === templateId);
+          if (template) {
+            title = template.title;
+            content = template.content;
+          }
+        }
+
+        const newNote: Note = {
+          id: generateId(),
+          title,
+          content,
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };
@@ -119,113 +189,74 @@ export const useNoteStore = create<NoteState>()(
         }));
       },
 
-      setNoteMode: (id, mode) => {
+      updateContent: (id, content) => {
         set((state) => ({
           notes: state.notes.map((n) =>
-            n.id === id ? { ...n, mode, updatedAt: Date.now() } : n,
+            n.id === id ? { ...n, content, updatedAt: Date.now() } : n,
           ),
         }));
       },
 
-      updateTextContent: (id, content) => {
-        set((state) => ({
-          notes: state.notes.map((n) =>
-            n.id === id
-              ? { ...n, textContent: content, updatedAt: Date.now() }
-              : n,
-          ),
-        }));
-      },
-
-      addItem: (noteId, text) => {
-        const newItem: NoteItem = {
-          id: generateId(),
-          text,
-          checked: false,
-        };
-
-        set((state) => ({
-          notes: state.notes.map((n) =>
-            n.id === noteId
-              ? { ...n, items: [...n.items, newItem], updatedAt: Date.now() }
-              : n,
-          ),
-        }));
-      },
-
-      updateItem: (noteId, itemId, text) => {
-        set((state) => ({
-          notes: state.notes.map((n) =>
-            n.id === noteId
-              ? {
-                  ...n,
-                  items: n.items.map((item) =>
-                    item.id === itemId ? { ...item, text } : item,
-                  ),
-                  updatedAt: Date.now(),
-                }
-              : n,
-          ),
-        }));
-      },
-
-      toggleItem: (noteId, itemId) => {
-        set((state) => ({
-          notes: state.notes.map((n) =>
-            n.id === noteId
-              ? {
-                  ...n,
-                  items: n.items.map((item) =>
-                    item.id === itemId
-                      ? { ...item, checked: !item.checked }
-                      : item,
-                  ),
-                  updatedAt: Date.now(),
-                }
-              : n,
-          ),
-        }));
-      },
-
-      deleteItem: (noteId, itemId) => {
-        set((state) => ({
-          notes: state.notes.map((n) =>
-            n.id === noteId
-              ? {
-                  ...n,
-                  items: n.items.filter((item) => item.id !== itemId),
-                  updatedAt: Date.now(),
-                }
-              : n,
-          ),
-        }));
-      },
-
-      reorderItems: (noteId, fromIndex, toIndex) => {
+      toggleLine: (noteId, lineIndex) => {
         set((state) => ({
           notes: state.notes.map((n) => {
             if (n.id !== noteId) return n;
-
-            const items = [...n.items];
-            const [removed] = items.splice(fromIndex, 1);
-            items.splice(toIndex, 0, removed);
-
-            return { ...n, items, updatedAt: Date.now() };
+            
+            const lines = n.content.split("\n");
+            const line = lines[lineIndex];
+            
+            if (line.startsWith("- ")) {
+              lines[lineIndex] = "+ " + line.substring(2);
+            } else if (line.startsWith("+ ")) {
+              lines[lineIndex] = "- " + line.substring(2);
+            }
+            
+            return { ...n, content: lines.join("\n"), updatedAt: Date.now() };
           }),
         }));
       },
 
       clearCheckedItems: (noteId) => {
         set((state) => ({
-          notes: state.notes.map((n) =>
-            n.id === noteId
-              ? {
-                  ...n,
-                  items: n.items.filter((item) => !item.checked),
-                  updatedAt: Date.now(),
-                }
-              : n,
-          ),
+          notes: state.notes.map((n) => {
+            if (n.id !== noteId) return n;
+            
+            const lines = n.content.split("\n");
+            const filteredLines = lines.filter((line) => !line.startsWith("+ "));
+            
+            return { ...n, content: filteredLines.join("\n"), updatedAt: Date.now() };
+          }),
+        }));
+      },
+
+      saveAsTemplate: (noteId) => {
+        const { notes } = get();
+        const note = notes.find((n) => n.id === noteId);
+        
+        if (!note) return;
+
+        // Reset all checklist items to unchecked for the template
+        const resetContent = note.content
+          .split("\n")
+          .map((line) => (line.startsWith("+ ") ? "- " + line.substring(2) : line))
+          .join("\n");
+
+        const newTemplate: Template = {
+          id: generateId(),
+          title: note.title || "Untitled Template",
+          content: resetContent,
+          isBuiltIn: false,
+          createdAt: Date.now(),
+        };
+
+        set((state) => ({
+          templates: [...state.templates, newTemplate],
+        }));
+      },
+
+      deleteTemplate: (id) => {
+        set((state) => ({
+          templates: state.templates.filter((t) => t.id !== id),
         }));
       },
 
@@ -239,6 +270,10 @@ export const useNoteStore = create<NoteState>()(
 
       setThemeMode: (mode) => {
         set({ themeMode: mode });
+      },
+
+      setLanguage: (lang) => {
+        set({ language: lang });
       },
 
       setHapticsEnabled: (enabled) => {
@@ -256,11 +291,13 @@ export const useNoteStore = create<NoteState>()(
       resetAllData: () => {
         set({
           notes: [],
+          templates: [],
           activeNoteId: null,
           isPremium: false,
           purchaseEmail: null,
           drawerPeekHeight: 80,
           themeMode: "system",
+          language: null,
           hapticsEnabled: true,
           shakeToClearEnabled: true,
           hasSeenOnboarding: false,
@@ -270,6 +307,48 @@ export const useNoteStore = create<NoteState>()(
     {
       name: "notted-storage",
       storage: createJSONStorage(() => AsyncStorage),
+      // Migration from old format to new format
+      migrate: (persistedState: any, _version: number) => {
+        // Ensure templates array exists
+        if (persistedState && !persistedState.templates) {
+          persistedState.templates = [];
+        }
+
+        if (persistedState && persistedState.notes) {
+          persistedState.notes = persistedState.notes.map((note: any) => {
+            // If note has old format (items array), convert to new format
+            if (note.items && Array.isArray(note.items)) {
+              const itemLines = note.items.map((item: any) => 
+                (item.checked ? "+ " : "- ") + item.text
+              ).join("\n");
+              
+              const textContent = note.textContent || "";
+              
+              // Combine: text content first, then items
+              let content = "";
+              if (textContent.trim()) {
+                content = textContent;
+                if (itemLines) {
+                  content += "\n" + itemLines;
+                }
+              } else {
+                content = itemLines;
+              }
+              
+              return {
+                id: note.id,
+                title: note.title,
+                content,
+                createdAt: note.createdAt,
+                updatedAt: note.updatedAt,
+              };
+            }
+            return note;
+          });
+        }
+        return persistedState;
+      },
+      version: 1,
     },
   ),
 );
