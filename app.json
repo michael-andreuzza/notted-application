@@ -46,7 +46,7 @@
           "backgroundColor": "#121212"
         }
       },
-      "versionCode": 6
+      "versionCode": 7
     },
     "web": {
       "bundler": "metro",
