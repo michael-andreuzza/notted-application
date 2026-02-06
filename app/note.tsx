@@ -72,7 +72,11 @@ export default function NoteScreen() {
     if (note && isNoteEmpty(note)) {
       deleteNote(note.id);
     }
-    router.replace("/");
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/");
+    }
   }, [note, deleteNote, router]);
 
   // Handle Android hardware back button
@@ -553,7 +557,11 @@ export default function NoteScreen() {
             if (note) {
               notification(NotificationType.Warning);
               deleteNote(note.id);
-              router.replace("/");
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace("/");
+              }
             }
           }}
         />
