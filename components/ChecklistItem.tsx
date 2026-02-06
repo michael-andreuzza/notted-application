@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { View, Text, TextInput, Pressable } from "react-native";
 import { NoteItem } from "@/stores/noteStore";
 import { colors, fonts } from "@/constants/theme";
+import { scale, fontScale } from "@/constants/responsive";
 import { useHaptics } from "@/hooks/useHaptics";
 
 interface ChecklistItemProps {
@@ -64,15 +65,15 @@ export function ChecklistItem({
         }}
         hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         style={{
-          width: 24,
-          height: 24,
+          width: scale(24),
+          height: scale(24),
           borderRadius: 6,
           borderWidth: 2,
           borderColor: item.checked
             ? theme.foreground
             : theme.disabled,
           backgroundColor: item.checked ? theme.foreground : "transparent",
-          marginRight: 14,
+          marginRight: scale(14),
           alignItems: "center",
           justifyContent: "center",
         }}
@@ -81,7 +82,7 @@ export function ChecklistItem({
           <Text
             style={{
               color: theme.background,
-              fontSize: 14,
+              fontSize: fontScale(14),
               ...fonts.regular,
             }}
           >
@@ -104,7 +105,7 @@ export function ChecklistItem({
           // @ts-ignore - web only
           style={{
             flex: 1,
-            fontSize: 28,
+            fontSize: fontScale(28),
             color: item.checked 
               ? (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.25)")
               : theme.foreground,
@@ -118,7 +119,7 @@ export function ChecklistItem({
         <Pressable onPress={handlePress} style={{ flex: 1 }}>
           <Text
             style={{
-              fontSize: 28,
+              fontSize: fontScale(28),
               color: item.checked 
                 ? (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.25)")
                 : theme.foreground,

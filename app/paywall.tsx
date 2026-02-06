@@ -1,9 +1,8 @@
 import React from "react";
-import { View, Text, Pressable, useColorScheme, Dimensions } from "react-native";
+import { View, Text, Pressable, useColorScheme } from "react-native";
 import { useRouter } from "expo-router";
 import { colors, fonts } from "@/constants/theme";
-
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+import { scale, fontScale } from "@/constants/responsive";
 
 const CARD_MARGIN_X = 12;
 const CARD_MARGIN_BOTTOM = 12;
@@ -40,9 +39,9 @@ export default function PaywallScreen() {
           left: CARD_MARGIN_X,
           right: CARD_MARGIN_X,
           backgroundColor: theme.background,
-          borderRadius: 24,
-          padding: 24,
-          paddingTop: 16,
+          borderRadius: scale(24),
+          padding: scale(24),
+          paddingTop: scale(16),
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -4 },
           shadowOpacity: isDark ? 0.4 : 0.15,
@@ -54,18 +53,18 @@ export default function PaywallScreen() {
         <View
           style={{
             alignSelf: "center",
-            width: 36,
+            width: scale(36),
             height: 4,
             backgroundColor: theme.muted,
             borderRadius: 2,
-            marginBottom: 24,
+            marginBottom: scale(24),
           }}
         />
 
         {/* Title */}
         <Text
           style={{
-            fontSize: 28,
+            fontSize: fontScale(28),
             color: theme.foreground,
             marginBottom: 8,
             ...fonts.regular,
@@ -77,10 +76,10 @@ export default function PaywallScreen() {
         {/* Subtitle */}
         <Text
           style={{
-            fontSize: 16,
+            fontSize: fontScale(16),
             color: theme.foreground,
             opacity: 0.5,
-            marginBottom: 32,
+            marginBottom: scale(32),
             ...fonts.regular,
           }}
         >
@@ -88,7 +87,7 @@ export default function PaywallScreen() {
         </Text>
 
         {/* Features */}
-        <View style={{ marginBottom: 32, gap: 16 }}>
+        <View style={{ marginBottom: scale(32), gap: scale(16) }}>
           <FeatureRow
             title="Unlimited Notes"
             description="Create as many notes as you need"
@@ -112,8 +111,8 @@ export default function PaywallScreen() {
             borderWidth: 1,
             borderColor: theme.border,
             borderRadius: 12,
-            padding: 16,
-            marginBottom: 24,
+            padding: scale(16),
+            marginBottom: scale(24),
           }}
         >
           <View
@@ -125,7 +124,7 @@ export default function PaywallScreen() {
           >
             <Text
               style={{
-                fontSize: 16,
+                fontSize: fontScale(16),
                 color: theme.foreground,
                 ...fonts.regular,
               }}
@@ -134,7 +133,7 @@ export default function PaywallScreen() {
             </Text>
             <Text
               style={{
-                fontSize: 24,
+                fontSize: fontScale(24),
                 color: theme.foreground,
                 ...fonts.regular,
               }}
@@ -144,7 +143,7 @@ export default function PaywallScreen() {
           </View>
           <Text
             style={{
-              fontSize: 13,
+              fontSize: fontScale(13),
               color: theme.foreground,
               opacity: 0.4,
               marginTop: 4,
@@ -160,8 +159,8 @@ export default function PaywallScreen() {
           onPress={handlePurchase}
           style={{
             backgroundColor: theme.foreground,
-            paddingVertical: 16,
-            borderRadius: 28,
+            paddingVertical: scale(16),
+            borderRadius: scale(28),
             alignItems: "center",
             marginBottom: 12,
           }}
@@ -169,7 +168,7 @@ export default function PaywallScreen() {
           <Text
             style={{
               color: theme.background,
-              fontSize: 16,
+              fontSize: fontScale(16),
               ...fonts.regular,
             }}
           >
@@ -183,7 +182,7 @@ export default function PaywallScreen() {
             style={{
               color: theme.foreground,
               opacity: 0.4,
-              fontSize: 14,
+              fontSize: fontScale(14),
               ...fonts.regular,
             }}
           >
@@ -208,7 +207,7 @@ function FeatureRow({
     <View>
       <Text
         style={{
-          fontSize: 16,
+          fontSize: fontScale(16),
           color: theme.foreground,
           ...fonts.regular,
         }}
@@ -217,7 +216,7 @@ function FeatureRow({
       </Text>
       <Text
         style={{
-          fontSize: 14,
+          fontSize: fontScale(14),
           color: theme.foreground,
           opacity: 0.4,
           marginTop: 2,

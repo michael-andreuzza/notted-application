@@ -1,6 +1,7 @@
 import React from "react";
 import { Text } from "react-native";
 import { fonts } from "@/constants/theme";
+import { fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 
 interface SectionLabelProps {
@@ -13,7 +14,7 @@ export function SectionLabel({ children }: SectionLabelProps) {
   return (
     <Text
       style={{
-        fontSize: 12,
+        fontSize: fontScale(12),
         color: theme.foreground,
         opacity: 0.4,
         marginBottom: 8,

@@ -9,6 +9,7 @@ import {
 import { useNoteStore } from "@/stores/noteStore";
 import { NoteEditor } from "./NoteEditor";
 import { colors } from "@/constants/theme";
+import { scale } from "@/constants/responsive";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -48,16 +49,16 @@ export function NoteDrawer() {
         bottom: 0,
         left: 0,
         right: 0,
-        height: SCREEN_HEIGHT - 100,
+        height: SCREEN_HEIGHT - scale(100),
         backgroundColor: theme.background,
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
+        borderTopLeftRadius: scale(24),
+        borderTopRightRadius: scale(24),
         shadowColor: "#000",
         shadowOffset: { width: 0, height: -4 },
         shadowOpacity: isDark ? 0.3 : 0.1,
         shadowRadius: 8,
         elevation: 10,
-        paddingHorizontal: 20,
+        paddingHorizontal: scale(20),
         paddingTop: 12,
       }}
     >
@@ -65,11 +66,11 @@ export function NoteDrawer() {
       <View
         style={{
           alignSelf: "center",
-          width: 40,
+          width: scale(40),
           height: 4,
           backgroundColor: isDark ? "#333" : "#DDD",
           borderRadius: 2,
-          marginBottom: 16,
+          marginBottom: scale(16),
         }}
       />
       {content}

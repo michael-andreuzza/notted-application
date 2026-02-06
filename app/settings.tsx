@@ -10,6 +10,7 @@ import {
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { colors, fonts } from "@/constants/theme";
+import { scale, fontScale } from "@/constants/responsive";
 import { useNoteStore, ThemeMode, LanguageCode } from "@/stores/noteStore";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon";
@@ -63,28 +64,28 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: 50 }}>
+    <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: scale(50) }}>
       {/* Header */}
       <View
         style={{
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          paddingHorizontal: 16,
+          paddingHorizontal: scale(16),
           paddingVertical: 8,
-          marginBottom: 16,
+          marginBottom: scale(16),
         }}
       >
         <Pressable
           onPress={() => router.back()}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
-          <ArrowLeftIcon color={theme.foreground} size={24} />
+          <ArrowLeftIcon color={theme.foreground} size={scale(24)} />
         </Pressable>
 
         <Text
           style={{
-            fontSize: 18,
+            fontSize: fontScale(18),
             color: theme.foreground,
             ...fonts.medium,
           }}
@@ -93,12 +94,12 @@ export default function SettingsScreen() {
         </Text>
 
         {/* Spacer for centering */}
-        <View style={{ width: 24 }} />
+        <View style={{ width: scale(24) }} />
       </View>
 
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: scale(20), paddingBottom: scale(40) }}
         showsVerticalScrollIndicator={false}
       >
         {/* Language Section */}
@@ -111,22 +112,22 @@ export default function SettingsScreen() {
             justifyContent: "space-between",
             alignItems: "center",
             paddingVertical: 12,
-            paddingHorizontal: 16,
+            paddingHorizontal: scale(16),
             borderRadius: 20,
             backgroundColor: theme.surfaceAlt,
-            marginBottom: 24,
+            marginBottom: scale(24),
           }}
         >
           <Text
             style={{
-              fontSize: 15,
+              fontSize: fontScale(15),
               color: theme.foreground,
               ...fonts.regular,
             }}
           >
             {currentLanguage.name}
           </Text>
-          <ChevronRightIcon color={theme.foreground} size={18} />
+          <ChevronRightIcon color={theme.foreground} size={scale(18)} />
         </Pressable>
 
         {/* Theme Section */}
@@ -135,9 +136,9 @@ export default function SettingsScreen() {
         <View
           style={{
             backgroundColor: theme.surfaceAlt,
-            borderRadius: 24,
+            borderRadius: scale(24),
             padding: 4,
-            marginBottom: 24,
+            marginBottom: scale(24),
           }}
         >
           <View
@@ -153,7 +154,7 @@ export default function SettingsScreen() {
                 style={{
                   flex: 1,
                   paddingVertical: 10,
-                  paddingHorizontal: 16,
+                  paddingHorizontal: scale(16),
                   borderRadius: 20,
                   alignItems: "center",
                   backgroundColor: themeMode === option.value
@@ -163,7 +164,7 @@ export default function SettingsScreen() {
               >
                 <Text
                   style={{
-                    fontSize: 14,
+                    fontSize: fontScale(14),
                     color: theme.foreground,
                     opacity: themeMode === option.value ? 1 : 0.5,
                     ...fonts.medium,
@@ -187,7 +188,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <View style={{ marginBottom: 24 }}>
+        <View style={{ marginBottom: scale(24) }}>
           <ToggleRow
             label={t("shakeToClear")}
             isEnabled={shakeToClearEnabled}
@@ -205,15 +206,15 @@ export default function SettingsScreen() {
           }}
           style={{
             paddingVertical: 12,
-            paddingHorizontal: 16,
-            marginBottom: 24,
+            paddingHorizontal: scale(16),
+            marginBottom: scale(24),
             borderRadius: 20,
             backgroundColor: theme.surfaceAlt,
           }}
         >
           <Text
             style={{
-              fontSize: 15,
+              fontSize: fontScale(15),
               color: theme.foreground,
               ...fonts.regular,
             }}
@@ -225,7 +226,7 @@ export default function SettingsScreen() {
         {/* Legal Section */}
         <SectionLabel>{t("legal")}</SectionLabel>
 
-        <View style={{ gap: 8, marginBottom: 24 }}>
+        <View style={{ gap: 8, marginBottom: scale(24) }}>
           <Pressable
             onPress={() => Linking.openURL("https://notted.app/legal/privacy/")}
             style={{
@@ -233,21 +234,21 @@ export default function SettingsScreen() {
               justifyContent: "space-between",
               alignItems: "center",
               paddingVertical: 12,
-              paddingHorizontal: 16,
+              paddingHorizontal: scale(16),
               borderRadius: 20,
               backgroundColor: theme.surfaceAlt,
             }}
           >
             <Text
               style={{
-                fontSize: 15,
+                fontSize: fontScale(15),
                 color: theme.foreground,
                 ...fonts.regular,
               }}
             >
               {t("privacyPolicy")}
             </Text>
-            <ExternalLinkIcon color={theme.foreground} size={16} />
+            <ExternalLinkIcon color={theme.foreground} size={scale(16)} />
           </Pressable>
 
           <Pressable
@@ -257,21 +258,21 @@ export default function SettingsScreen() {
               justifyContent: "space-between",
               alignItems: "center",
               paddingVertical: 12,
-              paddingHorizontal: 16,
+              paddingHorizontal: scale(16),
               borderRadius: 20,
               backgroundColor: theme.surfaceAlt,
             }}
           >
             <Text
               style={{
-                fontSize: 15,
+                fontSize: fontScale(15),
                 color: theme.foreground,
                 ...fonts.regular,
               }}
             >
               {t("termsOfService")}
             </Text>
-            <ExternalLinkIcon color={theme.foreground} size={16} />
+            <ExternalLinkIcon color={theme.foreground} size={scale(16)} />
           </Pressable>
 
           <Pressable
@@ -281,21 +282,21 @@ export default function SettingsScreen() {
               justifyContent: "space-between",
               alignItems: "center",
               paddingVertical: 12,
-              paddingHorizontal: 16,
+              paddingHorizontal: scale(16),
               borderRadius: 20,
               backgroundColor: theme.surfaceAlt,
             }}
           >
             <Text
               style={{
-                fontSize: 15,
+                fontSize: fontScale(15),
                 color: theme.foreground,
                 ...fonts.regular,
               }}
             >
               {t("faq")}
             </Text>
-            <ExternalLinkIcon color={theme.foreground} size={16} />
+            <ExternalLinkIcon color={theme.foreground} size={scale(16)} />
           </Pressable>
 
           <Pressable
@@ -305,21 +306,21 @@ export default function SettingsScreen() {
               justifyContent: "space-between",
               alignItems: "center",
               paddingVertical: 12,
-              paddingHorizontal: 16,
+              paddingHorizontal: scale(16),
               borderRadius: 20,
               backgroundColor: theme.surfaceAlt,
             }}
           >
             <Text
               style={{
-                fontSize: 15,
+                fontSize: fontScale(15),
                 color: theme.foreground,
                 ...fonts.regular,
               }}
             >
               {t("support")}
             </Text>
-            <ExternalLinkIcon color={theme.foreground} size={16} />
+            <ExternalLinkIcon color={theme.foreground} size={scale(16)} />
           </Pressable>
         </View>
 
@@ -330,15 +331,15 @@ export default function SettingsScreen() {
           onPress={() => setShowDeleteConfirm(true)}
           style={{
             paddingVertical: 12,
-            paddingHorizontal: 16,
+            paddingHorizontal: scale(16),
             borderRadius: 20,
-            backgroundColor: "rgba(255, 68, 68, 0.15)",
+            backgroundColor: "rgba(255, 68, 68, 0.08)",
             alignItems: "center",
           }}
         >
           <Text
             style={{
-              fontSize: 15,
+              fontSize: fontScale(15),
               color: colors.danger,
               ...fonts.regular,
             }}
@@ -377,7 +378,7 @@ export default function SettingsScreen() {
               right: 12,
               backgroundColor: theme.surface,
               borderRadius: 20,
-              padding: 20,
+              padding: scale(20),
             }}
           >
             {/* Close button */}
@@ -386,19 +387,19 @@ export default function SettingsScreen() {
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               style={{
                 position: "absolute",
-                top: 16,
-                right: 16,
+                top: scale(16),
+                right: scale(16),
                 zIndex: 1,
               }}
             >
-              <CloseIcon color={theme.foreground} size={20} />
+              <CloseIcon color={theme.foreground} size={scale(20)} />
             </Pressable>
 
             <Text
               style={{
-                fontSize: 20,
+                fontSize: fontScale(20),
                 color: theme.foreground,
-                marginBottom: 20,
+                marginBottom: scale(20),
                 ...fonts.medium,
               }}
             >
@@ -420,14 +421,14 @@ export default function SettingsScreen() {
                       justifyContent: "space-between",
                       alignItems: "center",
                       paddingVertical: 12,
-                      paddingHorizontal: 16,
+                      paddingHorizontal: scale(16),
                       borderRadius: 12,
                       backgroundColor: isSelected ? theme.surfaceAlt : "transparent",
                     }}
                   >
                     <Text
                       style={{
-                        fontSize: 16,
+                        fontSize: fontScale(16),
                         color: theme.foreground,
                         ...fonts.regular,
                       }}
@@ -435,7 +436,7 @@ export default function SettingsScreen() {
                       {lang.name}
                     </Text>
                     {isSelected && (
-                      <CheckIcon color={theme.foreground} size={18} />
+                      <CheckIcon color={theme.foreground} size={scale(18)} />
                     )}
                   </Pressable>
                 );

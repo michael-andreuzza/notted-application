@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, Pressable, Modal, Linking, TextInput, ActivityIndicator } from "react-native";
 import { useTranslation } from "react-i18next";
 import { fonts, colors } from "@/constants/theme";
+import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useNoteStore } from "@/stores/noteStore";
 import { RESTORE_ENDPOINT } from "@/constants/supabase";
@@ -92,7 +93,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             right: 12,
             backgroundColor: theme.surface,
             borderRadius: 20,
-            padding: 20,
+            padding: scale(20),
           }}
         >
           {/* Close button */}
@@ -101,18 +102,18 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             hitSlop={12}
             style={{
               position: "absolute",
-              top: 16,
-              right: 16,
+              top: scale(16),
+              right: scale(16),
               zIndex: 1,
             }}
           >
-            <CloseIcon color={theme.foreground} size={20} />
+            <CloseIcon color={theme.foreground} size={scale(20)} />
           </Pressable>
 
           {/* Title */}
           <Text
             style={{
-              fontSize: 20,
+              fontSize: fontScale(20),
               color: theme.foreground,
               marginBottom: 4,
               ...fonts.medium,
@@ -124,9 +125,9 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
           {/* Subtitle */}
           <Text
             style={{
-              fontSize: 15,
+              fontSize: fontScale(15),
               color: theme.foreground,
-              marginBottom: 20,
+              marginBottom: scale(20),
               ...fonts.regular,
             }}
           >
@@ -134,7 +135,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
           </Text>
 
           {/* Features */}
-          <View style={{ marginBottom: 20, gap: 12 }}>
+          <View style={{ marginBottom: scale(20), gap: 12 }}>
             <FeatureRow
               title={t("unlimitedNotesFeature")}
               description={t("unlimitedNotesDesc")}
@@ -157,8 +158,8 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             style={{
               backgroundColor: theme.card,
               borderRadius: 10,
-              padding: 14,
-              marginBottom: 16,
+              padding: scale(14),
+              marginBottom: scale(16),
             }}
           >
             <View
@@ -170,7 +171,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             >
               <Text
                 style={{
-                  fontSize: 14,
+                  fontSize: fontScale(14),
                   color: theme.foreground,
                   ...fonts.regular,
                 }}
@@ -179,7 +180,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
               </Text>
               <Text
                 style={{
-                  fontSize: 20,
+                  fontSize: fontScale(20),
                   color: theme.foreground,
                   ...fonts.regular,
                 }}
@@ -194,8 +195,8 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             onPress={handlePurchase}
             style={{
               backgroundColor: theme.foreground,
-              paddingVertical: 14,
-              borderRadius: 24,
+              paddingVertical: scale(14),
+              borderRadius: scale(24),
               alignItems: "center",
               marginBottom: 8,
             }}
@@ -203,7 +204,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             <Text
               style={{
                 color: theme.background,
-                fontSize: 15,
+                fontSize: fontScale(15),
                 ...fonts.regular,
               }}
             >
@@ -228,9 +229,9 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                 style={{
                   backgroundColor: theme.card,
                   borderRadius: 10,
-                  padding: 14,
+                  padding: scale(14),
                   color: theme.foreground,
-                  fontSize: 15,
+                  fontSize: fontScale(15),
                   ...fonts.regular,
                 }}
               />
@@ -238,7 +239,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                 <Text
                   style={{
                     color: colors.danger,
-                    fontSize: 13,
+                    fontSize: fontScale(13),
                     marginTop: 8,
                     ...fonts.regular,
                   }}
@@ -263,7 +264,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                   <Text
                     style={{
                       color: theme.foreground,
-                      fontSize: 14,
+                      fontSize: fontScale(14),
                       ...fonts.regular,
                     }}
                   >
@@ -288,7 +289,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                     <Text
                       style={{
                         color: theme.background,
-                        fontSize: 14,
+                        fontSize: fontScale(14),
                         ...fonts.regular,
                       }}
                     >
@@ -307,7 +308,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                 style={{
                   color: theme.foreground,
                   opacity: 0.4,
-                  fontSize: 13,
+                  fontSize: fontScale(13),
                   ...fonts.regular,
                 }}
               >
@@ -334,7 +335,7 @@ function FeatureRow({
     <View>
       <Text
         style={{
-          fontSize: 14,
+          fontSize: fontScale(14),
           color: theme.foreground,
           ...fonts.medium,
         }}
@@ -343,7 +344,7 @@ function FeatureRow({
       </Text>
       <Text
         style={{
-          fontSize: 12,
+          fontSize: fontScale(12),
           color: theme.foreground,
           opacity: 0.5,
           marginTop: 2,

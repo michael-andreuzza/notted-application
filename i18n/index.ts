@@ -7,11 +7,11 @@ import es from "../locales/es.json";
 import sv from "../locales/sv.json";
 import de from "../locales/de.json";
 import it from "../locales/it.json";
-import ru from "../locales/ru.json";
 import fi from "../locales/fi.json";
 import da from "../locales/da.json";
 import no from "../locales/no.json";
 import fr from "../locales/fr.json";
+import pt from "../locales/pt.json";
 
 export const resources = {
   en: { translation: en },
@@ -19,11 +19,11 @@ export const resources = {
   sv: { translation: sv },
   de: { translation: de },
   it: { translation: it },
-  ru: { translation: ru },
   fi: { translation: fi },
   da: { translation: da },
   no: { translation: no },
   fr: { translation: fr },
+  pt: { translation: pt },
 } as const;
 
 export const LANGUAGES = [
@@ -34,9 +34,9 @@ export const LANGUAGES = [
   { code: "fr", name: "Français" },
   { code: "it", name: "Italiano" },
   { code: "no", name: "Norsk" },
+  { code: "pt", name: "Português" },
   { code: "fi", name: "Suomi" },
   { code: "sv", name: "Svenska" },
-  { code: "ru", name: "Русский" },
 ] as const;
 
 export type LanguageCode = (typeof LANGUAGES)[number]["code"];

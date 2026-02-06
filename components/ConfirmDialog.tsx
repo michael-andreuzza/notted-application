@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { fonts, colors } from "@/constants/theme";
+import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 
 interface ConfirmDialogProps {
@@ -43,8 +44,8 @@ export function ConfirmDialog({
         style={{
           backgroundColor: theme.surface,
           borderRadius: 12,
-          padding: 24,
-          marginHorizontal: 40,
+          padding: scale(24),
+          marginHorizontal: scale(40),
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.25,
@@ -54,18 +55,18 @@ export function ConfirmDialog({
       >
         <Text
           style={{
-            fontSize: 18,
+            fontSize: fontScale(18),
             color: theme.foreground,
-            marginBottom: 20,
+            marginBottom: scale(20),
             textAlign: "center",
             ...fonts.medium,
           }}
         >
           {message}
         </Text>
-        <View style={{ flexDirection: "row", justifyContent: "center", gap: 24 }}>
+        <View style={{ flexDirection: "row", justifyContent: "center", gap: scale(24) }}>
           <Pressable onPress={onCancel}>
-            <Text style={{ color: theme.foreground, fontSize: 16, ...fonts.regular }}>
+            <Text style={{ color: theme.foreground, fontSize: fontScale(16), ...fonts.regular }}>
               {cancelLabel}
             </Text>
           </Pressable>
@@ -73,7 +74,7 @@ export function ConfirmDialog({
             <Text
               style={{
                 color: isDestructive ? colors.danger : theme.foreground,
-                fontSize: 16,
+                fontSize: fontScale(16),
                 ...fonts.medium,
               }}
             >

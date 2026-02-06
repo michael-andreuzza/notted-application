@@ -12,6 +12,7 @@ import {
 import { useRouter } from "expo-router";
 import { useNoteStore, Note } from "@/stores/noteStore";
 import { colors } from "@/constants/theme";
+import { scale, fontScale } from "@/constants/responsive";
 import { ChecklistItem } from "./ChecklistItem";
 import { NoteTabs } from "./NoteTabs";
 import { SettingsIcon } from "./icons/SettingsIcon";
@@ -81,7 +82,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
           style={{
             flexDirection: "row",
             alignItems: "center",
-            marginBottom: 16,
+            marginBottom: scale(16),
             paddingTop: showTabs ? 0 : 8,
           }}
         >
@@ -92,7 +93,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
             placeholderTextColor={isDark ? "#666" : "#999"}
             style={{
               flex: 1,
-              fontSize: 20,
+              fontSize: fontScale(20),
               fontWeight: "600",
               color: theme.foreground,
               padding: 0,
@@ -102,7 +103,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
             onPress={() => router.push("/settings")}
             style={{ padding: 8 }}
           >
-            <SettingsIcon color={theme.foreground} size={20} />
+            <SettingsIcon color={theme.foreground} size={scale(20)} />
           </Pressable>
         </View>
 
@@ -110,7 +111,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         <View
           style={{
             flexDirection: "row",
-            marginBottom: 16,
+            marginBottom: scale(16),
             gap: 8,
           }}
         >
@@ -118,7 +119,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
             onPress={() => setNoteMode(note.id, "list")}
             style={{
               paddingVertical: 6,
-              paddingHorizontal: 12,
+              paddingHorizontal: scale(12),
               borderRadius: 8,
               backgroundColor:
                 note.mode === "list"
@@ -131,7 +132,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
             <Text
               style={{
                 color: theme.foreground,
-                fontSize: 14,
+                fontSize: fontScale(14),
                 fontWeight: note.mode === "list" ? "600" : "400",
               }}
             >
@@ -142,7 +143,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
             onPress={() => setNoteMode(note.id, "text")}
             style={{
               paddingVertical: 6,
-              paddingHorizontal: 12,
+              paddingHorizontal: scale(12),
               borderRadius: 8,
               backgroundColor:
                 note.mode === "text"
@@ -155,7 +156,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
             <Text
               style={{
                 color: theme.foreground,
-                fontSize: 14,
+                fontSize: fontScale(14),
                 fontWeight: note.mode === "text" ? "600" : "400",
               }}
             >
@@ -192,12 +193,12 @@ export function NoteEditor({ note }: NoteEditorProps) {
             >
               <View
                 style={{
-                  width: 22,
-                  height: 22,
+                  width: scale(22),
+                  height: scale(22),
                   borderRadius: 6,
                   borderWidth: 2,
                   borderColor: isDark ? "#444" : "#CCC",
-                  marginRight: 12,
+                  marginRight: scale(12),
                 }}
               />
               <TextInput
@@ -211,7 +212,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
                 blurOnSubmit={false}
                 style={{
                   flex: 1,
-                  fontSize: 16,
+                  fontSize: fontScale(16),
                   color: theme.foreground,
                   padding: 0,
                 }}
@@ -229,9 +230,9 @@ export function NoteEditor({ note }: NoteEditorProps) {
               textAlignVertical="top"
               style={{
                 flex: 1,
-                fontSize: 16,
+                fontSize: fontScale(16),
                 color: theme.foreground,
-                lineHeight: 24,
+                lineHeight: scale(24),
                 minHeight: 200,
               }}
             />

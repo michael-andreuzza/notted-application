@@ -2,10 +2,13 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+export type NoteType = "text" | "list";
+
 export interface Note {
   id: string;
   title: string;
-  content: string; // Lines starting with "- " are unchecked items, "+ " are checked
+  content: string; // For list notes: lines starting with "- " are unchecked items, "+ " are checked. For text notes: plain text.
+  type: NoteType;
   createdAt: number;
   updatedAt: number;
 }
@@ -17,15 +20,6 @@ export interface Template {
   isBuiltIn: boolean; // true = pre-made, false = user-created
   createdAt: number;
 }
-
-// Built-in template IDs
-export const BUILT_IN_TEMPLATE_IDS = {
-  SHOPPING_LIST: "builtin-shopping",
-  WEEKLY_TASKS: "builtin-weekly",
-  MEETING_NOTES: "builtin-meeting",
-  PACKING_LIST: "builtin-packing",
-  PROJECT_CHECKLIST: "builtin-project",
-} as const;
 
 export type ThemeMode = "light" | "dark" | "system";
 export type LanguageCode = "en" | "es" | "sv" | "de";
@@ -44,8 +38,8 @@ interface NoteState {
   hasSeenOnboarding: boolean;
 
   // Note Actions
-  createNote: () => string;
-  createNoteFromTemplate: (templateId: string, builtInContent?: { title: string; content: string }) => string;
+  createNote: (type?: NoteType) => string;
+  createNoteFromTemplate: (templateId: string, builtInContent?: { title: string; content: string }, type?: NoteType) => string;
   deleteNote: (id: string) => void;
   setActiveNote: (id: string) => void;
   updateNoteTitle: (id: string, title: string) => void;
@@ -101,7 +95,7 @@ export const useNoteStore = create<NoteState>()(
       shakeToClearEnabled: true,
       hasSeenOnboarding: false,
 
-      createNote: () => {
+      createNote: (type: NoteType = "text") => {
         const { notes, isPremium } = get();
 
         if (!isPremium && notes.length >= 1) {
@@ -112,6 +106,7 @@ export const useNoteStore = create<NoteState>()(
           id: generateId(),
           title: "",
           content: "",
+          type,
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };
@@ -124,7 +119,7 @@ export const useNoteStore = create<NoteState>()(
         return newNote.id;
       },
 
-      createNoteFromTemplate: (templateId: string, builtInContent?: { title: string; content: string }) => {
+      createNoteFromTemplate: (templateId: string, builtInContent?: { title: string; content: string }, type?: NoteType) => {
         const { notes, templates, isPremium } = get();
 
         if (!isPremium && notes.length >= 1) {
@@ -148,10 +143,18 @@ export const useNoteStore = create<NoteState>()(
           }
         }
 
+        // Infer type: only "list" if ALL non-empty lines are checklist items
+        const nonEmptyLines = content.split("\n").filter(l => l.trim() !== "");
+        const allAreChecklist = nonEmptyLines.length > 0 && nonEmptyLines.every(
+          line => line.startsWith("- ") || line.startsWith("+ ")
+        );
+        const inferredType = type || (allAreChecklist ? "list" : "text");
+
         const newNote: Note = {
           id: generateId(),
           title,
           content,
+          type: inferredType,
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };
@@ -339,16 +342,27 @@ export const useNoteStore = create<NoteState>()(
                 id: note.id,
                 title: note.title,
                 content,
+                type: "list",
                 createdAt: note.createdAt,
                 updatedAt: note.updatedAt,
               };
             }
+
+            // Add type field to notes that don't have it
+            if (!note.type) {
+              const nonEmptyLines = note.content ? note.content.split("\n").filter((l: string) => l.trim() !== "") : [];
+              const allAreChecklist = nonEmptyLines.length > 0 && nonEmptyLines.every(
+                (line: string) => line.startsWith("- ") || line.startsWith("+ ")
+              );
+              note.type = allAreChecklist ? "list" : "text";
+            }
+
             return note;
           });
         }
         return persistedState;
       },
-      version: 1,
+      version: 2,
     },
   ),
 );

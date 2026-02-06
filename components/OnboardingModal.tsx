@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Pressable, Modal, TouchableWithoutFeedback } from "react-native";
 import { useTranslation } from "react-i18next";
 import { fonts } from "@/constants/theme";
+import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { PlusIcon } from "@/components/icons/PlusIcon";
 import { CheckIcon } from "@/components/icons/CheckIcon";
@@ -36,7 +37,7 @@ export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
                 right: 12,
                 backgroundColor: theme.surface,
                 borderRadius: 20,
-                padding: 20,
+                padding: scale(20),
               }}
             >
               {/* Close button */}
@@ -45,20 +46,20 @@ export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
                 hitSlop={12}
                 style={{
                   position: "absolute",
-                  top: 16,
-                  right: 16,
+                  top: scale(16),
+                  right: scale(16),
                   zIndex: 1,
                 }}
               >
-                <CloseIcon color={theme.foreground} size={20} />
+                <CloseIcon color={theme.foreground} size={scale(20)} />
               </Pressable>
 
               {/* Title */}
               <Text
                 style={{
-                  fontSize: 20,
+                  fontSize: fontScale(20),
                   color: theme.foreground,
-                  marginBottom: 20,
+                  marginBottom: scale(20),
                   ...fonts.medium,
                 }}
               >
@@ -66,24 +67,24 @@ export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
               </Text>
 
               {/* Tips */}
-              <View style={{ gap: 14, marginBottom: 24 }}>
+              <View style={{ gap: 14, marginBottom: scale(24) }}>
                 <TipRow
-                  icon={<PlusIcon color={theme.foreground} size={16} />}
+                  icon={<PlusIcon color={theme.foreground} size={scale(16)} />}
                   text={t("tipCreate")}
                   theme={theme}
                 />
                 <TipRow
-                  icon={<CheckIcon color={theme.foreground} size={16} />}
+                  icon={<CheckIcon color={theme.foreground} size={scale(16)} />}
                   text={t("tipCheck")}
                   theme={theme}
                 />
                 <TipRow
-                  icon={<ArrowDownIcon color={theme.foreground} size={16} />}
+                  icon={<ArrowDownIcon color={theme.foreground} size={scale(16)} />}
                   text={t("tipMove")}
                   theme={theme}
                 />
                 <TipRow
-                  icon={<ShakeIcon color={theme.foreground} size={16} />}
+                  icon={<ShakeIcon color={theme.foreground} size={scale(16)} />}
                   text={t("tipShake")}
                   theme={theme}
                 />
@@ -94,15 +95,15 @@ export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
                 onPress={onClose}
                 style={{
                   backgroundColor: theme.foreground,
-                  paddingVertical: 16,
-                  borderRadius: 28,
+                  paddingVertical: scale(16),
+                  borderRadius: scale(28),
                   alignItems: "center",
                 }}
               >
                 <Text
                   style={{
                     color: theme.background,
-                    fontSize: 16,
+                    fontSize: fontScale(16),
                     ...fonts.regular,
                   }}
                 >
@@ -128,12 +129,12 @@ function TipRow({
 }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <View style={{ width: 28 }}>
+      <View style={{ width: scale(28) }}>
         {icon}
       </View>
       <Text
         style={{
-          fontSize: 14,
+          fontSize: fontScale(14),
           color: theme.foreground,
           opacity: 0.7,
           flex: 1,

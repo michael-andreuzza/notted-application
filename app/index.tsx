@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
-import { View, Text, Pressable, Dimensions, ScrollView, TextInput } from "react-native";
+import { View, Text, Pressable, Dimensions, ScrollView, TextInput, Linking } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { useNoteStore, Note } from "@/stores/noteStore";
+import { useNoteStore, Note, NoteType } from "@/stores/noteStore";
 import { fonts } from "@/constants/theme";
+import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useHaptics } from "@/hooks/useHaptics";
 import { PaywallModal } from "@/components/PaywallModal";
@@ -18,6 +19,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const POLAR_CHECKOUT_URL = "https://buy.polar.sh/polar_cl_qCd3hFE0efbUAbSDO16d4aCtF8BJzlGCRQf8u40mrSz";
 
 // Date categorization helper
 type DateGroup = "today" | "yesterday" | "this week" | "last week" | "this month" | "older";
@@ -70,6 +72,10 @@ export default function HomeScreen() {
   const { notes, setActiveNote, createNote, createNoteFromTemplate, deleteNote, isPremium, hasSeenOnboarding, setHasSeenOnboarding } = useNoteStore();
   const { impact, notification, ImpactStyle, NotificationType } = useHaptics();
   const [showPaywall, setShowPaywall] = useState(false);
+  
+  const handleDirectPurchase = async () => {
+    await Linking.openURL(POLAR_CHECKOUT_URL);
+  };
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -145,9 +151,9 @@ export default function HomeScreen() {
     setShowTemplatePicker(true);
   };
 
-  const handleStartEmpty = () => {
+  const handleStartEmpty = (type: NoteType) => {
     impact(ImpactStyle.Medium);
-    const newNoteId = createNote();
+    const newNoteId = createNote(type);
     setActiveNote(newNoteId);
     router.push("/note");
   };
@@ -162,22 +168,22 @@ export default function HomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       {/* Content */}
-      <View style={{ flex: 1, paddingTop: 50 }}>
+      <View style={{ flex: 1, paddingTop: scale(50) }}>
         {/* Top Navigation */}
         <View
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            paddingHorizontal: 24,
+            paddingHorizontal: scale(24),
             paddingVertical: 8,
-            marginBottom: 16,
+            marginBottom: scale(16),
           }}
         >
           {/* App name */}
           <Text
             style={{
-              fontSize: 28,
+              fontSize: fontScale(28),
               color: theme.foreground,
               ...fonts.regular,
             }}
@@ -210,7 +216,7 @@ export default function HomeScreen() {
 
         {/* Search Input */}
         {showSearch && (
-          <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+          <View style={{ paddingHorizontal: scale(24), marginBottom: scale(24) }}>
             <View
               style={{
                 flexDirection: "row",
@@ -227,7 +233,7 @@ export default function HomeScreen() {
                 autoFocus
                 style={{
                   flex: 1,
-                  fontSize: 16,
+                  fontSize: fontScale(16),
                   color: theme.foreground,
                   paddingVertical: 12,
                   ...fonts.regular,
@@ -249,7 +255,7 @@ export default function HomeScreen() {
         {/* Notes List */}
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 160 }}
+          contentContainerStyle={{ paddingHorizontal: scale(24), paddingBottom: scale(160) }}
           showsVerticalScrollIndicator={false}
         >
           {groupedNotes.map(({ group, notes: groupNotes }, groupIndex) => (
@@ -257,12 +263,12 @@ export default function HomeScreen() {
               {/* Section Header */}
               <Text
                 style={{
-                  fontSize: 40,
+                  fontSize: fontScale(40),
                   color: theme.foreground,
                   letterSpacing: -1.5,
                   textTransform: "uppercase",
-                  marginTop: groupIndex === 0 ? 0 : 48,
-                  marginBottom: 24,
+                  marginTop: groupIndex === 0 ? 0 : scale(48),
+                  marginBottom: scale(24),
                   ...fonts.semibold,
                 }}
               >
@@ -276,13 +282,13 @@ export default function HomeScreen() {
                   onPress={() => handleNotePress(note.id)}
                   onLongPress={() => handleLongPress(note.id)}
                   delayLongPress={500}
-                  style={{ marginBottom: 28 }}
+                  style={{ marginBottom: scale(10) }}
                 >
                   <Text
                     style={{
-                      fontSize: 28,
+                      fontSize: fontScale(28),
                       color: theme.foreground,
-                      maxWidth: SCREEN_WIDTH - 48,
+                      maxWidth: SCREEN_WIDTH - scale(48),
                       ...fonts.medium,
                     }}
                     numberOfLines={1}
@@ -297,7 +303,7 @@ export default function HomeScreen() {
 
           {/* Empty state */}
           {groupedNotes.length === 0 && (
-            <View style={{ marginTop: 40 }}>
+            <View style={{ marginTop: scale(40) }}>
               <EmptyState
                 title={searchQuery ? t("noResults") : t("noNotesYet")}
                 subtitle={searchQuery ? undefined : t("tapToStart")}
@@ -310,26 +316,25 @@ export default function HomeScreen() {
 
         {/* Premium Banner - fixed at bottom, show if not premium */}
         {!isPremium && (
-          <Pressable
-            onPress={() => setShowPaywall(true)}
+          <View
             style={{
               position: "absolute",
-              bottom: 72,
-              left: 24,
-              right: 24,
-              padding: 24,
+              bottom: scale(72),
+              left: scale(24),
+              right: scale(24),
+              padding: scale(24),
               backgroundColor: theme.surface,
-              borderRadius: 24,
+              borderRadius: scale(24),
             }}
           >
             {/* Table Header */}
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: scale(20) }}>
               <View style={{ flex: 1 }} />
               <Text
                 style={{
-                  width: 70,
+                  width: scale(70),
                   textAlign: "center",
-                  fontSize: 13,
+                  fontSize: fontScale(13),
                   color: theme.foreground,
                   ...fonts.medium,
                 }}
@@ -338,7 +343,7 @@ export default function HomeScreen() {
               </Text>
               <View
                 style={{
-                  width: 80,
+                  width: scale(80),
                   paddingVertical: 8,
                   borderRadius: 20,
                   backgroundColor: theme.foreground,
@@ -348,7 +353,7 @@ export default function HomeScreen() {
               >
                 <Text
                   style={{
-                    fontSize: 13,
+                    fontSize: fontScale(13),
                     color: theme.background,
                     ...fonts.medium,
                   }}
@@ -378,51 +383,52 @@ export default function HomeScreen() {
                 <Text
                   style={{
                     flex: 1,
-                    fontSize: 15,
+                    fontSize: fontScale(15),
                     color: theme.foreground,
                     ...fonts.medium,
                   }}
                 >
                   {feature.label}
                 </Text>
-                <View style={{ width: 70, alignItems: "center" }}>
+                <View style={{ width: scale(70), alignItems: "center" }}>
                   {feature.free && (
-                    <CheckIcon color={theme.foreground} size={18} />
+                    <CheckIcon color={theme.foreground} size={scale(18)} />
                   )}
                 </View>
-                <View style={{ width: 80, alignItems: "center" }}>
+                <View style={{ width: scale(80), alignItems: "center" }}>
                   {feature.premium && (
-                    <CheckIcon color={theme.foreground} size={18} />
+                    <CheckIcon color={theme.foreground} size={scale(18)} />
                   )}
                 </View>
               </View>
             ))}
 
-            {/* CTA Button */}
-            <View
+            {/* CTA Button - goes directly to payment */}
+            <Pressable
+              onPress={handleDirectPurchase}
               style={{
-                marginTop: 20,
+                marginTop: scale(20),
                 backgroundColor: theme.foreground,
-                paddingVertical: 16,
-                borderRadius: 16,
+                paddingVertical: scale(16),
+                borderRadius: scale(16),
                 alignItems: "center",
               }}
             >
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: fontScale(16),
                   color: theme.background,
                   ...fonts.semibold,
                 }}
               >
                 {t("unlockPremium")} — $4.99
               </Text>
-            </View>
+            </Pressable>
             
             <Text
               style={{
                 marginTop: 12,
-                fontSize: 14,
+                fontSize: fontScale(14),
                 color: theme.foreground,
                 textAlign: "center",
                 ...fonts.regular,
@@ -430,7 +436,24 @@ export default function HomeScreen() {
             >
               {t("oneTimePurchase")}
             </Text>
-          </Pressable>
+
+            {/* Restore purchase link */}
+            <Pressable 
+              onPress={() => setShowPaywall(true)}
+              style={{ alignItems: "center", marginTop: 8 }}
+            >
+              <Text
+                style={{
+                  fontSize: fontScale(13),
+                  color: theme.foreground,
+                  opacity: 0.4,
+                  ...fonts.regular,
+                }}
+              >
+                {t("restorePurchase")}
+              </Text>
+            </Pressable>
+          </View>
         )}
 
         {/* Floating Add Button for Premium users (only when there are notes) */}
@@ -439,17 +462,17 @@ export default function HomeScreen() {
             onPress={handleNewNote}
             style={{
               position: "absolute",
-              bottom: 48,
-              right: 24,
-              width: 56,
-              height: 56,
-              borderRadius: 28,
+              bottom: scale(48),
+              right: scale(24),
+              width: scale(56),
+              height: scale(56),
+              borderRadius: scale(28),
               backgroundColor: theme.foreground,
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <PlusIcon color={theme.background} size={24} />
+            <PlusIcon color={theme.background} size={scale(24)} />
           </Pressable>
         )}
 

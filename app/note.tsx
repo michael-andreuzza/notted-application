@@ -13,8 +13,9 @@ import {
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Accelerometer } from "expo-sensors";
-import { useNoteStore } from "@/stores/noteStore";
+import { useNoteStore, NoteType } from "@/stores/noteStore";
 import { fonts } from "@/constants/theme";
+import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useHaptics } from "@/hooks/useHaptics";
 import { PaywallModal } from "@/components/PaywallModal";
@@ -54,6 +55,14 @@ export default function NoteScreen() {
   const isNoteEmpty = (n: typeof note) => {
     if (!n) return true;
     const hasTitle = n.title.trim().length > 0;
+    // For list notes, check if any items have actual text
+    if (n.type === "list") {
+      const hasItems = n.content.split("\n").some((line) => {
+        const text = line.startsWith("- ") || line.startsWith("+ ") ? line.substring(2) : line;
+        return text.trim().length > 0;
+      });
+      return !hasTitle && !hasItems;
+    }
     const hasContent = n.content.trim().length > 0;
     return !hasTitle && !hasContent;
   };
@@ -81,26 +90,16 @@ export default function NoteScreen() {
     return () => backHandler.remove();
   }, [handleBack]);
 
-  // Clean empty lines when note loads
-  useEffect(() => {
-    if (note && note.content) {
-      const lines = note.content.split("\n");
-      const cleanedLines = lines.filter(line => line.trim() !== "");
-      if (cleanedLines.length !== lines.length) {
-        updateContent(note.id, cleanedLines.join("\n"));
-      }
-    }
-  }, [note?.id]);
-
   const [showPaywall, setShowPaywall] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showClearedMessage, setShowClearedMessage] = useState(false);
   const [showSavedMessage, setShowSavedMessage] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [newLineText, setNewLineText] = useState("");
-  const newLineInputRef = useRef<TextInput>(null);
   const scrollViewRef = useRef<ScrollView>(null);
+  const contentInputRef = useRef<TextInput>(null);
+  const itemInputRefs = useRef<Map<number, TextInput>>(new Map());
+  const addItemInputRef = useRef<TextInput>(null);
   const lastShakeTime = useRef(0);
 
   // Shake to clear checked items
@@ -168,13 +167,13 @@ export default function NoteScreen() {
     setActiveNote(newNoteId);
   };
 
-  const handleStartEmpty = () => {
+  const handleStartEmpty = (type: NoteType) => {
     if (note && isNoteEmpty(note)) {
       deleteNote(note.id);
     }
     
     impact(ImpactStyle.Medium);
-    const newNoteId = createNote();
+    const newNoteId = createNote(type);
     setActiveNote(newNoteId);
   };
 
@@ -204,69 +203,92 @@ export default function NoteScreen() {
     toggleLine(note.id, lineIndex);
   };
 
-  const handleAddLine = () => {
-    if (!note || !newLineText.trim()) return;
-    
-    // Clean existing content and add new line
-    const existingLines = note.content 
-      ? note.content.split("\n").filter(line => line.trim() !== "")
-      : [];
-    existingLines.push(newLineText);
-    
-    updateContent(note.id, existingLines.join("\n"));
-    setNewLineText("");
-    
-    // Scroll to bottom after adding new line
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  };
+  // Layout constants for list mode
+  const CHECKBOX_SIZE = scale(24);
 
-  const handleUpdateLine = (lineIndex: number, newText: string) => {
+  // Parse content lines for list mode
+  const contentLines = note?.content ? note.content.split("\n") : [];
+
+  // For list mode: parse into items (each line is "- text" or "+ text")
+  const listItems = contentLines.map((line) => {
+    const isChecked = line.startsWith("+ ");
+    const isItem = line.startsWith("- ") || line.startsWith("+ ");
+    const text = isItem ? line.substring(2) : line;
+    return { text, isChecked, isItem };
+  });
+
+  // List mode helpers
+  const updateListItem = (index: number, newText: string) => {
     if (!note) return;
     const lines = note.content.split("\n");
-    
-    // If the line becomes empty, delete it
-    if (newText.trim() === "" || newText === "- " || newText === "+ ") {
-      lines.splice(lineIndex, 1);
-    } else {
-      lines[lineIndex] = newText;
-    }
-    
-    // Filter out any remaining empty lines
-    const cleanedLines = lines.filter(line => line.trim() !== "");
-    updateContent(note.id, cleanedLines.join("\n"));
+    const prefix = lines[index]?.startsWith("+ ") ? "+ " : "- ";
+    lines[index] = prefix + newText;
+    updateContent(note.id, lines.join("\n"));
   };
 
-  // Parse content into lines
-  const contentLines = note?.content ? note.content.split("\n") : [];
+  const addListItem = (afterIndex?: number) => {
+    if (!note) return;
+    const lines = note.content ? note.content.split("\n") : [];
+    const insertAt = afterIndex !== undefined ? afterIndex + 1 : lines.length;
+    lines.splice(insertAt, 0, "- ");
+    updateContent(note.id, lines.join("\n"));
+    // Focus the new item after render
+    setTimeout(() => {
+      itemInputRefs.current.get(insertAt)?.focus();
+    }, 50);
+  };
+
+  const deleteListItem = (index: number) => {
+    if (!note) return;
+    const lines = note.content.split("\n");
+    if (lines.length <= 1) {
+      // Last item - just clear it
+      updateContent(note.id, "");
+      setTimeout(() => addItemInputRef.current?.focus(), 50);
+      return;
+    }
+    lines.splice(index, 1);
+    updateContent(note.id, lines.join("\n"));
+    // Focus previous item or the add item input
+    setTimeout(() => {
+      if (index > 0) {
+        itemInputRefs.current.get(index - 1)?.focus();
+      } else {
+        itemInputRefs.current.get(0)?.focus();
+      }
+    }, 50);
+  };
+
+  // Determine note type
+  const noteType = note?.type || "text";
+  const isListMode = noteType === "list";
 
   if (!note) {
     return (
-      <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: 50 }}>
+      <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: scale(50) }}>
         {/* Top Navigation */}
         <View
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            paddingHorizontal: 16,
+            paddingHorizontal: scale(16),
             paddingVertical: 8,
-            marginBottom: 16,
+            marginBottom: scale(16),
           }}
         >
           <Pressable
             onPress={handleBack}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            <ArrowLeftIcon color={theme.foreground} size={24} />
+            <ArrowLeftIcon color={theme.foreground} size={scale(24)} />
           </Pressable>
 
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: scale(16) }}>
             <Pressable onPress={handleNewNote}>
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: fontScale(16),
                   color: theme.foreground,
                   ...fonts.regular,
                 }}
@@ -279,7 +301,7 @@ export default function NoteScreen() {
               onPress={() => router.push("/settings")}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
-              <MoreIcon color={theme.foreground} size={24} />
+              <MoreIcon color={theme.foreground} size={scale(24)} />
             </Pressable>
           </View>
         </View>
@@ -304,14 +326,14 @@ export default function NoteScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
     >
-      <View style={{ flex: 1, paddingTop: 50 }}>
+      <View style={{ flex: 1, paddingTop: scale(50) }}>
         {/* Top Navigation */}
         <View
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            paddingHorizontal: 16,
+            paddingHorizontal: scale(16),
             paddingVertical: 8,
             marginBottom: 8,
           }}
@@ -320,14 +342,14 @@ export default function NoteScreen() {
             onPress={handleBack}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            <ArrowLeftIcon color={theme.foreground} size={24} />
+            <ArrowLeftIcon color={theme.foreground} size={scale(24)} />
           </Pressable>
 
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: scale(16) }}>
             <Pressable onPress={handleNewNote}>
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: fontScale(16),
                   color: theme.foreground,
                   ...fonts.regular,
                 }}
@@ -340,27 +362,27 @@ export default function NoteScreen() {
               onPress={() => setShowDeleteConfirm(true)}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
-              <TrashIcon color={theme.foreground} size={20} />
+              <TrashIcon color={theme.foreground} size={scale(20)} />
             </Pressable>
 
             <Pressable
               onPress={() => router.push("/settings")}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
-              <MoreIcon color={theme.foreground} size={24} />
+              <MoreIcon color={theme.foreground} size={scale(24)} />
             </Pressable>
           </View>
         </View>
 
         {/* Title Input */}
-        <View style={{ paddingHorizontal: 24, marginBottom: 16 }}>
+        <View style={{ paddingHorizontal: scale(24), marginBottom: scale(16) }}>
           <TextInput
             value={note.title}
             onChangeText={(text) => updateNoteTitle(note.id, text)}
             placeholder={t("noteTitle")}
             placeholderTextColor={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"}
             style={{
-              fontSize: 28,
+              fontSize: fontScale(28),
               color: theme.foreground,
               ...fonts.semibold,
             }}
@@ -371,140 +393,153 @@ export default function NoteScreen() {
         <ScrollView
           ref={scrollViewRef}
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 300 }}
+          contentContainerStyle={{ paddingHorizontal: scale(24), paddingBottom: scale(300) }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive"
         >
-          {/* Hint at top */}
-          {!newLineText && (
-            <Text
-              style={{
-                fontSize: 18,
-                color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)",
-                marginBottom: 16,
-                ...fonts.regular,
-              }}
-            >
-              Tip: Type - and press enter to create a checklist item
-            </Text>
-          )}
-
-          {/* Rendered lines */}
-          {contentLines.map((line, index) => {
-            const isChecklist = line.startsWith("- ") || line.startsWith("+ ");
-            const isChecked = line.startsWith("+ ");
-            const text = isChecklist ? line.substring(2) : line;
-
-            if (isChecklist) {
-              return (
+          {isListMode ? (
+            <>
+              {/* List mode: per-item rendering */}
+              {listItems.map((item, index) => (
                 <View
-                  key={index}
+                  key={`item-${index}`}
                   style={{
                     flexDirection: "row",
-                    alignItems: "flex-start",
-                    marginBottom: 8,
+                    alignItems: "center",
+                    marginBottom: 4,
                   }}
                 >
                   {/* Checkbox */}
                   <Pressable
                     onPress={() => handleToggleLine(index)}
+                    hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                     style={{
-                      width: 24,
-                      height: 24,
+                      width: CHECKBOX_SIZE,
+                      height: CHECKBOX_SIZE,
                       borderRadius: 6,
                       borderWidth: 2,
-                      borderColor: isChecked 
-                        ? theme.foreground
-                        : theme.disabled,
-                      backgroundColor: isChecked ? theme.foreground : "transparent",
+                      borderColor: item.isChecked ? theme.foreground : theme.disabled,
+                      backgroundColor: item.isChecked ? theme.foreground : "transparent",
                       justifyContent: "center",
                       alignItems: "center",
-                      marginRight: 14,
-                      marginTop: 4,
+                      marginRight: scale(12),
                     }}
                   >
-                    {isChecked && (
-                      <CheckIcon color={theme.background} size={14} />
+                    {item.isChecked && (
+                      <CheckIcon color={theme.background} size={scale(14)} />
                     )}
                   </Pressable>
 
-                  {/* Text */}
+                  {/* Item text input */}
                   <TextInput
-                    value={text}
-                    onChangeText={(newText) => {
-                      const prefix = isChecked ? "+ " : "- ";
-                      handleUpdateLine(index, prefix + newText);
-                    }}
-                    onKeyPress={({ nativeEvent }) => {
-                      // Delete line when backspace is pressed on empty text
-                      if (nativeEvent.key === 'Backspace' && text === '') {
-                        handleUpdateLine(index, '');
+                    ref={(ref) => {
+                      if (ref) {
+                        itemInputRefs.current.set(index, ref);
+                      } else {
+                        itemInputRefs.current.delete(index);
                       }
                     }}
+                    value={item.text}
+                    onChangeText={(text) => {
+                      // Detect newline (Enter press) - split into current + new item
+                      if (text.includes("\n")) {
+                        const parts = text.split("\n");
+                        updateListItem(index, parts[0]);
+                        // Insert new item after this one with remaining text
+                        const lines = note.content.split("\n");
+                        const prefix = lines[index]?.startsWith("+ ") ? "+ " : "- ";
+                        lines[index] = prefix + parts[0];
+                        lines.splice(index + 1, 0, "- " + (parts[1] || ""));
+                        updateContent(note.id, lines.join("\n"));
+                        setTimeout(() => {
+                          itemInputRefs.current.get(index + 1)?.focus();
+                        }, 50);
+                        return;
+                      }
+                      updateListItem(index, text);
+                    }}
+                    onSubmitEditing={() => {
+                      // Enter pressed - add new item below and focus it
+                      addListItem(index);
+                    }}
+                    onKeyPress={({ nativeEvent }) => {
+                      if (nativeEvent.key === "Backspace" && item.text === "") {
+                        deleteListItem(index);
+                      }
+                    }}
+                    blurOnSubmit={false}
+                    returnKeyType="next"
+                    placeholder={t("addItem")}
+                    placeholderTextColor={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)"}
                     style={{
                       flex: 1,
-                      fontSize: 28,
-                      color: isChecked 
-                        ? (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.25)")
-                        : theme.foreground,
-                      textDecorationLine: isChecked ? "line-through" : "none",
-                      lineHeight: 36,
-                      padding: 0,
-                      ...fonts.medium,
+                      fontSize: fontScale(18),
+                      color: theme.foreground,
+                      paddingVertical: scale(8),
+                      textDecorationLine: item.isChecked ? "line-through" : "none",
+                      opacity: item.isChecked ? 0.5 : 1,
+                      ...fonts.regular,
                     }}
-                    multiline
+                    autoCapitalize="sentences"
                   />
                 </View>
-              );
-            }
+              ))}
 
-            // Regular text line
-            return (
-              <TextInput
-                key={index}
-                value={line}
-                onChangeText={(newText) => handleUpdateLine(index, newText)}
-                onKeyPress={({ nativeEvent }) => {
-                  // Delete line when backspace is pressed on empty text
-                  if (nativeEvent.key === 'Backspace' && line === '') {
-                    handleUpdateLine(index, '');
-                  }
-                }}
+              {/* Add new item input */}
+              <Pressable
+                onPress={() => addListItem()}
                 style={{
-                  fontSize: 28,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: scale(8),
+                  opacity: 0.5,
+                }}
+              >
+                <View
+                  style={{
+                    width: CHECKBOX_SIZE,
+                    height: CHECKBOX_SIZE,
+                    borderRadius: 6,
+                    borderWidth: 2,
+                    borderColor: theme.disabled,
+                    borderStyle: "dashed",
+                    marginRight: scale(12),
+                  }}
+                />
+                <Text
+                  style={{
+                    fontSize: fontScale(18),
+                    color: theme.foreground,
+                    ...fonts.regular,
+                  }}
+                >
+                  {t("addItem")}
+                </Text>
+              </Pressable>
+            </>
+          ) : (
+            <>
+              {/* Text mode: simple multiline TextInput */}
+              <TextInput
+                ref={contentInputRef}
+                value={note.content}
+                onChangeText={(text) => updateContent(note.id, text)}
+                placeholder={t("startWriting")}
+                placeholderTextColor={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"}
+                style={{
+                  fontSize: fontScale(18),
                   color: theme.foreground,
-                  lineHeight: 36,
-                  marginBottom: 8,
-                  padding: 0,
-                  ...fonts.medium,
+                  lineHeight: fontScale(28),
+                  minHeight: 200,
+                  ...fonts.regular,
                 }}
                 multiline
+                textAlignVertical="top"
+                autoCapitalize="sentences"
               />
-            );
-          })}
-
-          {/* Add new line input */}
-          <View style={{ flexDirection: "row", alignItems: "flex-start", marginTop: 8 }}>
-            <TextInput
-              ref={newLineInputRef}
-              value={newLineText}
-              onChangeText={setNewLineText}
-              onSubmitEditing={handleAddLine}
-              placeholder={contentLines.length === 0 ? t("startWriting") : t("addItem")}
-              placeholderTextColor={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"}
-              style={{
-                flex: 1,
-                fontSize: 28,
-                color: theme.foreground,
-                lineHeight: 36,
-                padding: 0,
-                ...fonts.medium,
-              }}
-              blurOnSubmit={false}
-              returnKeyType="done"
-            />
-          </View>
+            </>
+          )}
         </ScrollView>
 
         {/* Delete confirmation */}
@@ -533,12 +568,12 @@ export default function NoteScreen() {
             left: "50%",
             transform: [{ translateX: -60 }, { translateY: -20 }],
             backgroundColor: theme.card,
-            paddingHorizontal: 24,
+            paddingHorizontal: scale(24),
             paddingVertical: 12,
             borderRadius: 20,
           }}
         >
-          <Text style={{ color: theme.foreground, fontSize: 16, ...fonts.regular }}>
+          <Text style={{ color: theme.foreground, fontSize: fontScale(16), ...fonts.regular }}>
             {t("clearedItems")}
           </Text>
         </View>
@@ -553,12 +588,12 @@ export default function NoteScreen() {
             left: "50%",
             transform: [{ translateX: -70 }, { translateY: -20 }],
             backgroundColor: theme.card,
-            paddingHorizontal: 24,
+            paddingHorizontal: scale(24),
             paddingVertical: 12,
             borderRadius: 20,
           }}
         >
-          <Text style={{ color: theme.foreground, fontSize: 16, ...fonts.regular }}>
+          <Text style={{ color: theme.foreground, fontSize: fontScale(16), ...fonts.regular }}>
             {t("templateSaved")}
           </Text>
         </View>
@@ -591,14 +626,14 @@ export default function NoteScreen() {
               <Pressable
                 onPress={handleSaveAsTemplate}
                 style={{
-                  paddingVertical: 16,
-                  paddingHorizontal: 20,
+                  paddingVertical: scale(16),
+                  paddingHorizontal: scale(20),
                   borderRadius: 12,
                 }}
               >
                 <Text
                   style={{
-                    fontSize: 16,
+                    fontSize: fontScale(16),
                     color: theme.foreground,
                     ...fonts.regular,
                   }}
@@ -615,14 +650,14 @@ export default function NoteScreen() {
                 router.push("/settings");
               }}
               style={{
-                paddingVertical: 16,
-                paddingHorizontal: 20,
+                paddingVertical: scale(16),
+                paddingHorizontal: scale(20),
                 borderRadius: 12,
               }}
             >
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: fontScale(16),
                   color: theme.foreground,
                   ...fonts.regular,
                 }}
@@ -635,8 +670,8 @@ export default function NoteScreen() {
             <Pressable
               onPress={() => setShowOptionsMenu(false)}
               style={{
-                paddingVertical: 16,
-                paddingHorizontal: 20,
+                paddingVertical: scale(16),
+                paddingHorizontal: scale(20),
                 borderRadius: 12,
                 marginTop: 4,
                 borderTopWidth: 1,
@@ -645,7 +680,7 @@ export default function NoteScreen() {
             >
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: fontScale(16),
                   color: theme.foreground,
                   opacity: 0.5,
                   textAlign: "center",

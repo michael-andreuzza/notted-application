@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useNoteStore, Note } from "@/stores/noteStore";
 import { colors } from "@/constants/theme";
+import { scale, fontScale } from "@/constants/responsive";
 
 interface NoteTabsProps {
   onNewNote: () => void;
@@ -44,7 +45,7 @@ export function NoteTabs({ onNewNote }: NoteTabsProps) {
             onPress={() => setActiveNote(note.id)}
             style={{
               paddingVertical: 6,
-              paddingHorizontal: 12,
+              paddingHorizontal: scale(12),
               borderRadius: 16,
               backgroundColor:
                 activeNoteId === note.id
@@ -55,7 +56,7 @@ export function NoteTabs({ onNewNote }: NoteTabsProps) {
             <Text
               style={{
                 color: theme.foreground,
-                fontSize: 14,
+                fontSize: fontScale(14),
                 fontWeight: activeNoteId === note.id ? "600" : "400",
                 opacity: activeNoteId === note.id ? 1 : 0.6,
               }}
@@ -71,7 +72,7 @@ export function NoteTabs({ onNewNote }: NoteTabsProps) {
           onPress={canAddNote ? onNewNote : undefined}
           style={{
             paddingVertical: 6,
-            paddingHorizontal: 12,
+            paddingHorizontal: scale(12),
             borderRadius: 16,
             opacity: canAddNote ? 1 : 0.3,
           }}
@@ -79,7 +80,7 @@ export function NoteTabs({ onNewNote }: NoteTabsProps) {
           <Text
             style={{
               color: theme.foreground,
-              fontSize: 14,
+              fontSize: fontScale(14),
               fontWeight: "400",
             }}
           >
