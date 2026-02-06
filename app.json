@@ -33,6 +33,9 @@
         "backgroundColor": "#F2F2F2"
       },
       "package": "com.notted.app",
+      "blockedPermissions": [
+        "android.permission.ACTIVITY_RECOGNITION"
+      ],
       "splash": {
         "image": "./assets/splash-icon.png",
         "resizeMode": "contain",
@@ -42,7 +45,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#121212"
         }
-      }
+      },
+      "versionCode": 5
     },
     "web": {
       "bundler": "metro",

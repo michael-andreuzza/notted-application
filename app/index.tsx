@@ -314,7 +314,7 @@ export default function HomeScreen() {
             onPress={() => setShowPaywall(true)}
             style={{
               position: "absolute",
-              bottom: 48,
+              bottom: 72,
               left: 24,
               right: 24,
               padding: 24,
@@ -331,8 +331,7 @@ export default function HomeScreen() {
                   textAlign: "center",
                   fontSize: 13,
                   color: theme.foreground,
-                  opacity: 0.4,
-                  ...fonts.regular,
+                  ...fonts.medium,
                 }}
               >
                 {t("free")}
@@ -381,7 +380,7 @@ export default function HomeScreen() {
                     flex: 1,
                     fontSize: 15,
                     color: theme.foreground,
-                    ...fonts.regular,
+                    ...fonts.medium,
                   }}
                 >
                   {feature.label}
@@ -423,9 +422,8 @@ export default function HomeScreen() {
             <Text
               style={{
                 marginTop: 12,
-                fontSize: 13,
+                fontSize: 14,
                 color: theme.foreground,
-                opacity: 0.4,
                 textAlign: "center",
                 ...fonts.regular,
               }}

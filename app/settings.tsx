@@ -5,6 +5,7 @@ import {
   Pressable,
   ScrollView,
   Linking,
+  Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -12,6 +13,10 @@ import { colors, fonts } from "@/constants/theme";
 import { useNoteStore, ThemeMode, LanguageCode } from "@/stores/noteStore";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon";
+import { ChevronRightIcon } from "@/components/icons/ChevronRightIcon";
+import { CheckIcon } from "@/components/icons/CheckIcon";
+import { CloseIcon } from "@/components/icons/CloseIcon";
+import { ExternalLinkIcon } from "@/components/icons/ExternalLinkIcon";
 import { SectionLabel } from "@/components/SectionLabel";
 import { ToggleRow } from "@/components/ToggleRow";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -36,6 +41,9 @@ export default function SettingsScreen() {
   } = useNoteStore();
   
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showLanguagePicker, setShowLanguagePicker] = useState(false);
+
+  const currentLanguage = LANGUAGES.find((l) => l.code === (language || i18n.language)) || LANGUAGES[0];
 
   const themeOptions: { value: ThemeMode; label: string }[] = [
     { value: "system", label: t("system") },
@@ -96,43 +104,30 @@ export default function SettingsScreen() {
         {/* Language Section */}
         <SectionLabel>{t("language")}</SectionLabel>
 
-        <View
+        <Pressable
+          onPress={() => setShowLanguagePicker(true)}
           style={{
             flexDirection: "row",
-            gap: 8,
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            borderRadius: 20,
+            backgroundColor: theme.surfaceAlt,
             marginBottom: 24,
           }}
         >
-          {LANGUAGES.map((lang) => {
-            const isSelected = (language || i18n.language) === lang.code;
-            return (
-              <Pressable
-                key={lang.code}
-                onPress={() => handleLanguageChange(lang.code as LanguageCode)}
-                style={{
-                  flex: 1,
-                  paddingVertical: 10,
-                  borderRadius: 20,
-                  backgroundColor: isSelected
-                    ? theme.foreground
-                    : theme.card,
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: isSelected ? theme.background : theme.foreground,
-                    opacity: isSelected ? 1 : 0.7,
-                    ...fonts.medium,
-                  }}
-                >
-                  {lang.name}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+          <Text
+            style={{
+              fontSize: 15,
+              color: theme.foreground,
+              ...fonts.regular,
+            }}
+          >
+            {currentLanguage.name}
+          </Text>
+          <ChevronRightIcon color={theme.foreground} size={18} />
+        </Pressable>
 
         {/* Theme Section */}
         <SectionLabel>{t("theme")}</SectionLabel>
@@ -209,11 +204,11 @@ export default function SettingsScreen() {
             router.replace("/");
           }}
           style={{
-            paddingVertical: 10,
-            paddingHorizontal: 12,
+            paddingVertical: 12,
+            paddingHorizontal: 16,
             marginBottom: 24,
             borderRadius: 20,
-            backgroundColor: theme.card,
+            backgroundColor: theme.surfaceAlt,
           }}
         >
           <Text
@@ -230,14 +225,17 @@ export default function SettingsScreen() {
         {/* Legal Section */}
         <SectionLabel>{t("legal")}</SectionLabel>
 
-        <View style={{ gap: 4, marginBottom: 24 }}>
+        <View style={{ gap: 8, marginBottom: 24 }}>
           <Pressable
             onPress={() => Linking.openURL("https://notted.app/legal/privacy/")}
             style={{
-              paddingVertical: 10,
-              paddingHorizontal: 12,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingVertical: 12,
+              paddingHorizontal: 16,
               borderRadius: 20,
-              backgroundColor: theme.card,
+              backgroundColor: theme.surfaceAlt,
             }}
           >
             <Text
@@ -249,15 +247,19 @@ export default function SettingsScreen() {
             >
               {t("privacyPolicy")}
             </Text>
+            <ExternalLinkIcon color={theme.foreground} size={16} />
           </Pressable>
 
           <Pressable
             onPress={() => Linking.openURL("https://notted.app/legal/terms/")}
             style={{
-              paddingVertical: 10,
-              paddingHorizontal: 12,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingVertical: 12,
+              paddingHorizontal: 16,
               borderRadius: 20,
-              backgroundColor: theme.card,
+              backgroundColor: theme.surfaceAlt,
             }}
           >
             <Text
@@ -269,15 +271,19 @@ export default function SettingsScreen() {
             >
               {t("termsOfService")}
             </Text>
+            <ExternalLinkIcon color={theme.foreground} size={16} />
           </Pressable>
 
           <Pressable
             onPress={() => Linking.openURL("https://notted.app/legal/faq/")}
             style={{
-              paddingVertical: 10,
-              paddingHorizontal: 12,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingVertical: 12,
+              paddingHorizontal: 16,
               borderRadius: 20,
-              backgroundColor: theme.card,
+              backgroundColor: theme.surfaceAlt,
             }}
           >
             <Text
@@ -289,15 +295,19 @@ export default function SettingsScreen() {
             >
               {t("faq")}
             </Text>
+            <ExternalLinkIcon color={theme.foreground} size={16} />
           </Pressable>
 
           <Pressable
             onPress={() => Linking.openURL("https://notted.app/support/")}
             style={{
-              paddingVertical: 10,
-              paddingHorizontal: 12,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingVertical: 12,
+              paddingHorizontal: 16,
               borderRadius: 20,
-              backgroundColor: theme.card,
+              backgroundColor: theme.surfaceAlt,
             }}
           >
             <Text
@@ -309,6 +319,7 @@ export default function SettingsScreen() {
             >
               {t("support")}
             </Text>
+            <ExternalLinkIcon color={theme.foreground} size={16} />
           </Pressable>
         </View>
 
@@ -318,8 +329,11 @@ export default function SettingsScreen() {
         <Pressable
           onPress={() => setShowDeleteConfirm(true)}
           style={{
-            paddingVertical: 10,
-            paddingHorizontal: 12,
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            borderRadius: 20,
+            backgroundColor: "rgba(255, 68, 68, 0.15)",
+            alignItems: "center",
           }}
         >
           <Text
@@ -343,6 +357,93 @@ export default function SettingsScreen() {
         onCancel={() => setShowDeleteConfirm(false)}
         onConfirm={handleDeleteAllData}
       />
+
+      {/* Language Picker Modal */}
+      <Modal
+        visible={showLanguagePicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowLanguagePicker(false)}
+      >
+        <Pressable
+          style={{ flex: 1 }}
+          onPress={() => setShowLanguagePicker(false)}
+        >
+          <View
+            style={{
+              position: "absolute",
+              bottom: 12,
+              left: 12,
+              right: 12,
+              backgroundColor: theme.surface,
+              borderRadius: 20,
+              padding: 20,
+            }}
+          >
+            {/* Close button */}
+            <Pressable
+              onPress={() => setShowLanguagePicker(false)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              style={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                zIndex: 1,
+              }}
+            >
+              <CloseIcon color={theme.foreground} size={20} />
+            </Pressable>
+
+            <Text
+              style={{
+                fontSize: 20,
+                color: theme.foreground,
+                marginBottom: 20,
+                ...fonts.medium,
+              }}
+            >
+              {t("language")}
+            </Text>
+            
+            <View style={{ gap: 4 }}>
+              {LANGUAGES.map((lang) => {
+                const isSelected = currentLanguage.code === lang.code;
+                return (
+                  <Pressable
+                    key={lang.code}
+                    onPress={() => {
+                      handleLanguageChange(lang.code as LanguageCode);
+                      setShowLanguagePicker(false);
+                    }}
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      paddingVertical: 12,
+                      paddingHorizontal: 16,
+                      borderRadius: 12,
+                      backgroundColor: isSelected ? theme.surfaceAlt : "transparent",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        color: theme.foreground,
+                        ...fonts.regular,
+                      }}
+                    >
+                      {lang.name}
+                    </Text>
+                    {isSelected && (
+                      <CheckIcon color={theme.foreground} size={18} />
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }

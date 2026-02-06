@@ -124,9 +124,8 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
           {/* Subtitle */}
           <Text
             style={{
-              fontSize: 14,
+              fontSize: 15,
               color: theme.foreground,
-              opacity: 0.5,
               marginBottom: 20,
               ...fonts.regular,
             }}
@@ -337,7 +336,7 @@ function FeatureRow({
         style={{
           fontSize: 14,
           color: theme.foreground,
-          ...fonts.regular,
+          ...fonts.medium,
         }}
       >
         {title}
@@ -346,7 +345,7 @@ function FeatureRow({
         style={{
           fontSize: 12,
           color: theme.foreground,
-          opacity: 0.4,
+          opacity: 0.5,
           marginTop: 2,
           ...fonts.regular,
         }}

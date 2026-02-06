@@ -22,6 +22,7 @@ import { TemplatePickerModal } from "@/components/TemplatePickerModal";
 import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon";
 import { MoreIcon } from "@/components/icons/MoreIcon";
 import { TrashIcon } from "@/components/icons/TrashIcon";
+import { CheckIcon } from "@/components/icons/CheckIcon";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
@@ -80,6 +81,17 @@ export default function NoteScreen() {
     return () => backHandler.remove();
   }, [handleBack]);
 
+  // Clean empty lines when note loads
+  useEffect(() => {
+    if (note && note.content) {
+      const lines = note.content.split("\n");
+      const cleanedLines = lines.filter(line => line.trim() !== "");
+      if (cleanedLines.length !== lines.length) {
+        updateContent(note.id, cleanedLines.join("\n"));
+      }
+    }
+  }, [note?.id]);
+
   const [showPaywall, setShowPaywall] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
@@ -88,6 +100,7 @@ export default function NoteScreen() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [newLineText, setNewLineText] = useState("");
   const newLineInputRef = useRef<TextInput>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
   const lastShakeTime = useRef(0);
 
   // Shake to clear checked items
@@ -194,19 +207,35 @@ export default function NoteScreen() {
   const handleAddLine = () => {
     if (!note || !newLineText.trim()) return;
     
-    const newContent = note.content 
-      ? note.content + "\n" + newLineText 
-      : newLineText;
+    // Clean existing content and add new line
+    const existingLines = note.content 
+      ? note.content.split("\n").filter(line => line.trim() !== "")
+      : [];
+    existingLines.push(newLineText);
     
-    updateContent(note.id, newContent);
+    updateContent(note.id, existingLines.join("\n"));
     setNewLineText("");
+    
+    // Scroll to bottom after adding new line
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
   };
 
   const handleUpdateLine = (lineIndex: number, newText: string) => {
     if (!note) return;
     const lines = note.content.split("\n");
-    lines[lineIndex] = newText;
-    updateContent(note.id, lines.join("\n"));
+    
+    // If the line becomes empty, delete it
+    if (newText.trim() === "" || newText === "- " || newText === "+ ") {
+      lines.splice(lineIndex, 1);
+    } else {
+      lines[lineIndex] = newText;
+    }
+    
+    // Filter out any remaining empty lines
+    const cleanedLines = lines.filter(line => line.trim() !== "");
+    updateContent(note.id, cleanedLines.join("\n"));
   };
 
   // Parse content into lines
@@ -272,7 +301,8 @@ export default function NoteScreen() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: theme.background }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
     >
       <View style={{ flex: 1, paddingTop: 50 }}>
         {/* Top Navigation */}
@@ -314,7 +344,7 @@ export default function NoteScreen() {
             </Pressable>
 
             <Pressable
-              onPress={() => setShowOptionsMenu(true)}
+              onPress={() => router.push("/settings")}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
               <MoreIcon color={theme.foreground} size={24} />
@@ -328,7 +358,7 @@ export default function NoteScreen() {
             value={note.title}
             onChangeText={(text) => updateNoteTitle(note.id, text)}
             placeholder={t("noteTitle")}
-            placeholderTextColor={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"}
+            placeholderTextColor={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"}
             style={{
               fontSize: 28,
               color: theme.foreground,
@@ -339,11 +369,27 @@ export default function NoteScreen() {
 
         {/* Content */}
         <ScrollView
+          ref={scrollViewRef}
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 120 }}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 300 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
         >
+          {/* Hint at top */}
+          {!newLineText && (
+            <Text
+              style={{
+                fontSize: 18,
+                color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)",
+                marginBottom: 16,
+                ...fonts.regular,
+              }}
+            >
+              Tip: Type - and press enter to create a checklist item
+            </Text>
+          )}
+
           {/* Rendered lines */}
           {contentLines.map((line, index) => {
             const isChecklist = line.startsWith("- ") || line.startsWith("+ ");
@@ -375,17 +421,11 @@ export default function NoteScreen() {
                       justifyContent: "center",
                       alignItems: "center",
                       marginRight: 14,
-                      marginTop: 6,
+                      marginTop: 4,
                     }}
                   >
                     {isChecked && (
-                      <Text style={{ 
-                        color: theme.background, 
-                        fontSize: 14,
-                        ...fonts.regular,
-                      }}>
-                        ✓
-                      </Text>
+                      <CheckIcon color={theme.background} size={14} />
                     )}
                   </Pressable>
 
@@ -395,6 +435,12 @@ export default function NoteScreen() {
                     onChangeText={(newText) => {
                       const prefix = isChecked ? "+ " : "- ";
                       handleUpdateLine(index, prefix + newText);
+                    }}
+                    onKeyPress={({ nativeEvent }) => {
+                      // Delete line when backspace is pressed on empty text
+                      if (nativeEvent.key === 'Backspace' && text === '') {
+                        handleUpdateLine(index, '');
+                      }
                     }}
                     style={{
                       flex: 1,
@@ -419,6 +465,12 @@ export default function NoteScreen() {
                 key={index}
                 value={line}
                 onChangeText={(newText) => handleUpdateLine(index, newText)}
+                onKeyPress={({ nativeEvent }) => {
+                  // Delete line when backspace is pressed on empty text
+                  if (nativeEvent.key === 'Backspace' && line === '') {
+                    handleUpdateLine(index, '');
+                  }
+                }}
                 style={{
                   fontSize: 28,
                   color: theme.foreground,
@@ -440,7 +492,7 @@ export default function NoteScreen() {
               onChangeText={setNewLineText}
               onSubmitEditing={handleAddLine}
               placeholder={contentLines.length === 0 ? t("startWriting") : t("addItem")}
-              placeholderTextColor={isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)"}
+              placeholderTextColor={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"}
               style={{
                 flex: 1,
                 fontSize: 28,
@@ -453,20 +505,6 @@ export default function NoteScreen() {
               returnKeyType="done"
             />
           </View>
-
-          {/* Hint */}
-          {contentLines.length === 0 && !newLineText && (
-            <Text
-              style={{
-                fontSize: 14,
-                color: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)",
-                marginTop: 16,
-                ...fonts.regular,
-              }}
-            >
-              Tip: Start with "- " to create a checklist item
-            </Text>
-          )}
         </ScrollView>
 
         {/* Delete confirmation */}

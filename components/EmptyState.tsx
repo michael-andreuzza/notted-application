@@ -18,7 +18,7 @@ export function EmptyState({ title, subtitle, onAction }: EmptyStateProps) {
       <Text
         style={{
           fontSize: 28,
-          color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)",
+          color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
           ...fonts.regular,
         }}
       >
@@ -28,7 +28,7 @@ export function EmptyState({ title, subtitle, onAction }: EmptyStateProps) {
         <Text
           style={{
             fontSize: 16,
-            color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)",
+            color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)",
             marginTop: 8,
             ...fonts.regular,
           }}
