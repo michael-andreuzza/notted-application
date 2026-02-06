@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Pressable, Modal, TouchableWithoutFeedback } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { fonts } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
@@ -18,6 +19,7 @@ interface OnboardingModalProps {
 export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
   const { isDark, theme } = useAppTheme();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   return (
     <Modal
@@ -32,7 +34,7 @@ export function OnboardingModal({ visible, onClose }: OnboardingModalProps) {
             <View
               style={{
                 position: "absolute",
-                bottom: 12,
+                bottom: 12 + insets.bottom,
                 left: 12,
                 right: 12,
                 backgroundColor: theme.surface,

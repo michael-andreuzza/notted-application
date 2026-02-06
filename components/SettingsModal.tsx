@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { View, Text, Pressable, useColorScheme, Modal, ScrollView, Animated } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { colors, fonts } from "@/constants/theme";
 import { useNoteStore, ThemeMode, LanguageCode } from "@/stores/noteStore";
@@ -16,6 +17,7 @@ interface SettingsModalProps {
 export function SettingsModal({ visible, onClose }: SettingsModalProps) {
   const systemColorScheme = useColorScheme();
   const { t, i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { themeMode, setThemeMode, language, setLanguage, hapticsEnabled, setHapticsEnabled, shakeToClearEnabled, setShakeToClearEnabled, setHasSeenOnboarding, resetAllData } = useNoteStore();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
@@ -68,7 +70,7 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
         <View
           style={{
             position: "absolute",
-            bottom: 12,
+            bottom: 12 + insets.bottom,
             left: 12,
             right: 12,
             backgroundColor: theme.surface,

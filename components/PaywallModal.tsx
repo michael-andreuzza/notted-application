@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, Pressable, Modal, Linking, TextInput, ActivityIndicator } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { fonts, colors } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
@@ -18,6 +19,7 @@ interface PaywallModalProps {
 export function PaywallModal({ visible, onClose }: PaywallModalProps) {
   const { isDark, theme } = useAppTheme();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { setPremium, purchaseEmail } = useNoteStore();
   
   const [showRestoreInput, setShowRestoreInput] = useState(false);
@@ -88,7 +90,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
         <View
           style={{
             position: "absolute",
-            bottom: 12,
+            bottom: 12 + insets.bottom,
             left: 12,
             right: 12,
             backgroundColor: theme.surface,

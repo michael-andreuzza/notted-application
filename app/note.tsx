@@ -11,6 +11,7 @@ import {
   Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { Accelerometer } from "expo-sensors";
 import { useNoteStore, NoteType } from "@/stores/noteStore";
@@ -31,6 +32,7 @@ export default function NoteScreen() {
   const router = useRouter();
   const { isDark, theme } = useAppTheme();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const {
     notes,
@@ -397,7 +399,7 @@ export default function NoteScreen() {
         <ScrollView
           ref={scrollViewRef}
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: scale(24), paddingBottom: scale(300) }}
+          contentContainerStyle={{ paddingHorizontal: scale(24), paddingBottom: scale(300) + insets.bottom }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive"
@@ -621,7 +623,7 @@ export default function NoteScreen() {
           <View
             style={{
               position: "absolute",
-              bottom: 12,
+              bottom: 12 + insets.bottom,
               left: 12,
               right: 12,
               backgroundColor: theme.surface,

@@ -2,6 +2,7 @@ import { useEffect, useCallback, useState } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme, View, Platform } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
 import * as SplashScreen from "expo-splash-screen";
 import * as NavigationBar from "expo-navigation-bar";
@@ -103,12 +104,14 @@ export default function RootLayout() {
 
   // On web, render directly. On native, wrap with View for splash screen callback.
   if (Platform.OS === "web") {
-    return content;
+    return <SafeAreaProvider>{content}</SafeAreaProvider>;
   }
 
   return (
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      {content}
-    </View>
+    <SafeAreaProvider>
+      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        {content}
+      </View>
+    </SafeAreaProvider>
   );
 }

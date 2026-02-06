@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { View, Text, Pressable, Dimensions, ScrollView, TextInput, Linking } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useNoteStore, Note, NoteType } from "@/stores/noteStore";
@@ -68,6 +69,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { isDark, theme } = useAppTheme();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const { notes, setActiveNote, createNote, createNoteFromTemplate, deleteNote, isPremium, hasSeenOnboarding, setHasSeenOnboarding } = useNoteStore();
   const { impact, notification, ImpactStyle, NotificationType } = useHaptics();
@@ -255,7 +257,7 @@ export default function HomeScreen() {
         {/* Notes List */}
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: scale(24), paddingBottom: scale(160) }}
+          contentContainerStyle={{ paddingHorizontal: scale(24), paddingBottom: scale(160) + insets.bottom }}
           showsVerticalScrollIndicator={false}
         >
           {groupedNotes.map(({ group, notes: groupNotes }, groupIndex) => (
@@ -319,7 +321,7 @@ export default function HomeScreen() {
           <View
             style={{
               position: "absolute",
-              bottom: scale(72),
+              bottom: scale(72) + insets.bottom,
               left: scale(24),
               right: scale(24),
               padding: scale(24),
@@ -462,7 +464,7 @@ export default function HomeScreen() {
             onPress={handleNewNote}
             style={{
               position: "absolute",
-              bottom: scale(48),
+              bottom: scale(48) + insets.bottom,
               right: scale(24),
               width: scale(56),
               height: scale(56),

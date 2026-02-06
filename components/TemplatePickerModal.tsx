@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Pressable, Modal } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { fonts } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
@@ -21,6 +22,7 @@ export function TemplatePickerModal({
 }: TemplatePickerModalProps) {
   const { theme } = useAppTheme();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const handleSelect = (type: NoteType) => {
     onStartEmpty(type);
@@ -41,7 +43,7 @@ export function TemplatePickerModal({
         <View
           style={{
             position: "absolute",
-            bottom: 12,
+            bottom: 12 + insets.bottom,
             left: 12,
             right: 12,
             backgroundColor: theme.surface,

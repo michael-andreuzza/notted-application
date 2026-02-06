@@ -8,6 +8,7 @@ import {
   Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { colors, fonts } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
@@ -27,6 +28,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const { theme } = useAppTheme();
+  const insets = useSafeAreaInsets();
   
   const {
     themeMode,
@@ -99,7 +101,7 @@ export default function SettingsScreen() {
 
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: scale(20), paddingBottom: scale(40) }}
+        contentContainerStyle={{ paddingHorizontal: scale(20), paddingBottom: scale(40) + insets.bottom }}
         showsVerticalScrollIndicator={false}
       >
         {/* Language Section */}
@@ -373,7 +375,7 @@ export default function SettingsScreen() {
           <View
             style={{
               position: "absolute",
-              bottom: 12,
+              bottom: 12 + insets.bottom,
               left: 12,
               right: 12,
               backgroundColor: theme.surface,
