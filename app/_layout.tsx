@@ -2,6 +2,7 @@ import { useEffect, useCallback, useState } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme, View, Platform } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
 import * as SplashScreen from "expo-splash-screen";
@@ -104,14 +105,20 @@ export default function RootLayout() {
 
   // On web, render directly. On native, wrap with View for splash screen callback.
   if (Platform.OS === "web") {
-    return <SafeAreaProvider>{content}</SafeAreaProvider>;
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>{content}</SafeAreaProvider>
+      </GestureHandlerRootView>
+    );
   }
 
   return (
-    <SafeAreaProvider>
-      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-        {content}
-      </View>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+          {content}
+        </View>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

@@ -2,26 +2,24 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  Pressable,
   ScrollView,
   Linking,
-  Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { colors, fonts } from "@/constants/theme";
+import { fonts } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
-import { useNoteStore, ThemeMode, LanguageCode } from "@/stores/noteStore";
+import { useNoteStore, ThemeMode } from "@/stores/noteStore";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon";
 import { ChevronRightIcon } from "@/components/icons/ChevronRightIcon";
-import { CheckIcon } from "@/components/icons/CheckIcon";
-import { CloseIcon } from "@/components/icons/CloseIcon";
 import { ExternalLinkIcon } from "@/components/icons/ExternalLinkIcon";
 import { SectionLabel } from "@/components/SectionLabel";
 import { ToggleRow } from "@/components/ToggleRow";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { Button } from "@/components/Button";
+import { IconButton } from "@/components/IconButton";
 import { LANGUAGES } from "@/i18n";
 
 export default function SettingsScreen() {
@@ -34,7 +32,6 @@ export default function SettingsScreen() {
     themeMode,
     setThemeMode,
     language,
-    setLanguage,
     hapticsEnabled,
     setHapticsEnabled,
     shakeToClearEnabled,
@@ -44,7 +41,6 @@ export default function SettingsScreen() {
   } = useNoteStore();
   
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showLanguagePicker, setShowLanguagePicker] = useState(false);
 
   const currentLanguage = LANGUAGES.find((l) => l.code === (language || i18n.language)) || LANGUAGES[0];
 
@@ -53,11 +49,6 @@ export default function SettingsScreen() {
     { value: "light", label: t("light") },
     { value: "dark", label: t("dark") },
   ];
-
-  const handleLanguageChange = (langCode: LanguageCode) => {
-    setLanguage(langCode);
-    i18n.changeLanguage(langCode);
-  };
 
   const handleDeleteAllData = () => {
     resetAllData();
@@ -78,12 +69,14 @@ export default function SettingsScreen() {
           marginBottom: scale(16),
         }}
       >
-        <Pressable
+        <IconButton
           onPress={() => router.back()}
+          size="sm"
+          background={false}
+          icon={(color, size) => <ArrowLeftIcon color={color} size={size} />}
+          iconSize={scale(24)}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <ArrowLeftIcon color={theme.foreground} size={scale(24)} />
-        </Pressable>
+        />
 
         <Text
           style={{
@@ -107,30 +100,15 @@ export default function SettingsScreen() {
         {/* Language Section */}
         <SectionLabel>{t("language")}</SectionLabel>
 
-        <Pressable
-          onPress={() => setShowLanguagePicker(true)}
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingVertical: 12,
-            paddingHorizontal: scale(16),
-            borderRadius: 20,
-            backgroundColor: theme.surfaceAlt,
-            marginBottom: scale(24),
-          }}
-        >
-          <Text
-            style={{
-              fontSize: fontScale(15),
-              color: theme.foreground,
-              ...fonts.regular,
-            }}
-          >
-            {currentLanguage.name}
-          </Text>
-          <ChevronRightIcon color={theme.foreground} size={scale(18)} />
-        </Pressable>
+        <Button
+          title={currentLanguage.name}
+          onPress={() => router.push("/language")}
+          variant="muted"
+          fullWidth
+          align="space-between"
+          style={{ marginBottom: scale(24) }}
+          rightIcon={<ChevronRightIcon color={theme.foreground} size={scale(18)} />}
+        />
 
         {/* Theme Section */}
         <SectionLabel>{t("theme")}</SectionLabel>
@@ -150,31 +128,24 @@ export default function SettingsScreen() {
             }}
           >
             {themeOptions.map((option) => (
-              <Pressable
+              <Button
                 key={option.value}
+                title={option.label}
                 onPress={() => setThemeMode(option.value)}
+                variant="muted"
+                size="sm"
+                fullWidth
                 style={{
                   flex: 1,
-                  paddingVertical: 10,
-                  paddingHorizontal: scale(16),
-                  borderRadius: 20,
-                  alignItems: "center",
                   backgroundColor: themeMode === option.value
                     ? theme.cardActive
                     : "transparent",
                 }}
-              >
-                <Text
-                  style={{
-                    fontSize: fontScale(14),
-                    color: theme.foreground,
-                    opacity: themeMode === option.value ? 1 : 0.5,
-                    ...fonts.medium,
-                  }}
-                >
-                  {option.label}
-                </Text>
-              </Pressable>
+                textStyle={{
+                  opacity: themeMode === option.value ? 1 : 0.5,
+                  ...fonts.medium,
+                }}
+              />
             ))}
           </View>
         </View>
@@ -201,154 +172,69 @@ export default function SettingsScreen() {
         {/* Help Section */}
         <SectionLabel>{t("help")}</SectionLabel>
 
-        <Pressable
+        <Button
+          title={t("showOnboarding")}
           onPress={() => {
             setHasSeenOnboarding(false);
-            router.replace("/");
+            router.push("/onboarding");
           }}
-          style={{
-            paddingVertical: 12,
-            paddingHorizontal: scale(16),
-            marginBottom: scale(24),
-            borderRadius: 20,
-            backgroundColor: theme.surfaceAlt,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: fontScale(15),
-              color: theme.foreground,
-              ...fonts.regular,
-            }}
-          >
-            {t("showOnboarding")}
-          </Text>
-        </Pressable>
+          variant="muted"
+          fullWidth
+          align="space-between"
+          rightIcon={<ChevronRightIcon color={theme.foreground} size={scale(18)} />}
+          style={{ marginBottom: scale(24) }}
+        />
 
         {/* Legal Section */}
         <SectionLabel>{t("legal")}</SectionLabel>
 
         <View style={{ gap: 8, marginBottom: scale(24) }}>
-          <Pressable
+          <Button
+            title={t("privacyPolicy")}
             onPress={() => Linking.openURL("https://notted.app/legal/privacy/")}
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              paddingVertical: 12,
-              paddingHorizontal: scale(16),
-              borderRadius: 20,
-              backgroundColor: theme.surfaceAlt,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: fontScale(15),
-                color: theme.foreground,
-                ...fonts.regular,
-              }}
-            >
-              {t("privacyPolicy")}
-            </Text>
-            <ExternalLinkIcon color={theme.foreground} size={scale(16)} />
-          </Pressable>
+            variant="muted"
+            fullWidth
+            align="space-between"
+            rightIcon={<ExternalLinkIcon color={theme.foreground} size={scale(16)} />}
+          />
 
-          <Pressable
+          <Button
+            title={t("termsOfService")}
             onPress={() => Linking.openURL("https://notted.app/legal/terms/")}
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              paddingVertical: 12,
-              paddingHorizontal: scale(16),
-              borderRadius: 20,
-              backgroundColor: theme.surfaceAlt,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: fontScale(15),
-                color: theme.foreground,
-                ...fonts.regular,
-              }}
-            >
-              {t("termsOfService")}
-            </Text>
-            <ExternalLinkIcon color={theme.foreground} size={scale(16)} />
-          </Pressable>
+            variant="muted"
+            fullWidth
+            align="space-between"
+            rightIcon={<ExternalLinkIcon color={theme.foreground} size={scale(16)} />}
+          />
 
-          <Pressable
+          <Button
+            title={t("faq")}
             onPress={() => Linking.openURL("https://notted.app/legal/faq/")}
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              paddingVertical: 12,
-              paddingHorizontal: scale(16),
-              borderRadius: 20,
-              backgroundColor: theme.surfaceAlt,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: fontScale(15),
-                color: theme.foreground,
-                ...fonts.regular,
-              }}
-            >
-              {t("faq")}
-            </Text>
-            <ExternalLinkIcon color={theme.foreground} size={scale(16)} />
-          </Pressable>
+            variant="muted"
+            fullWidth
+            align="space-between"
+            rightIcon={<ExternalLinkIcon color={theme.foreground} size={scale(16)} />}
+          />
 
-          <Pressable
+          <Button
+            title={t("support")}
             onPress={() => Linking.openURL("https://notted.app/support/")}
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              paddingVertical: 12,
-              paddingHorizontal: scale(16),
-              borderRadius: 20,
-              backgroundColor: theme.surfaceAlt,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: fontScale(15),
-                color: theme.foreground,
-                ...fonts.regular,
-              }}
-            >
-              {t("support")}
-            </Text>
-            <ExternalLinkIcon color={theme.foreground} size={scale(16)} />
-          </Pressable>
+            variant="muted"
+            fullWidth
+            align="space-between"
+            rightIcon={<ExternalLinkIcon color={theme.foreground} size={scale(16)} />}
+          />
         </View>
 
         {/* Data Section */}
         <SectionLabel>{t("data")}</SectionLabel>
 
-        <Pressable
+        <Button
+          title={t("deleteAllData")}
           onPress={() => setShowDeleteConfirm(true)}
-          style={{
-            paddingVertical: 12,
-            paddingHorizontal: scale(16),
-            borderRadius: 20,
-            backgroundColor: "rgba(255, 68, 68, 0.08)",
-            alignItems: "center",
-          }}
-        >
-          <Text
-            style={{
-              fontSize: fontScale(15),
-              color: colors.danger,
-              ...fonts.regular,
-            }}
-          >
-            {t("deleteAllData")}
-          </Text>
-        </Pressable>
+          variant="destructive"
+          fullWidth
+        />
       </ScrollView>
 
       {/* Delete confirmation dialog */}
@@ -361,92 +247,6 @@ export default function SettingsScreen() {
         onConfirm={handleDeleteAllData}
       />
 
-      {/* Language Picker Modal */}
-      <Modal
-        visible={showLanguagePicker}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowLanguagePicker(false)}
-      >
-        <Pressable
-          style={{ flex: 1 }}
-          onPress={() => setShowLanguagePicker(false)}
-        >
-          <View
-            style={{
-              position: "absolute",
-              bottom: 12 + insets.bottom,
-              left: 12,
-              right: 12,
-              backgroundColor: theme.surface,
-              borderRadius: 20,
-              padding: scale(20),
-            }}
-          >
-            {/* Close button */}
-            <Pressable
-              onPress={() => setShowLanguagePicker(false)}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              style={{
-                position: "absolute",
-                top: scale(16),
-                right: scale(16),
-                zIndex: 1,
-              }}
-            >
-              <CloseIcon color={theme.foreground} size={scale(20)} />
-            </Pressable>
-
-            <Text
-              style={{
-                fontSize: fontScale(20),
-                color: theme.foreground,
-                marginBottom: scale(20),
-                ...fonts.medium,
-              }}
-            >
-              {t("language")}
-            </Text>
-            
-            <View style={{ gap: 4 }}>
-              {LANGUAGES.map((lang) => {
-                const isSelected = currentLanguage.code === lang.code;
-                return (
-                  <Pressable
-                    key={lang.code}
-                    onPress={() => {
-                      handleLanguageChange(lang.code as LanguageCode);
-                      setShowLanguagePicker(false);
-                    }}
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      paddingVertical: 12,
-                      paddingHorizontal: scale(16),
-                      borderRadius: 12,
-                      backgroundColor: isSelected ? theme.surfaceAlt : "transparent",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: fontScale(16),
-                        color: theme.foreground,
-                        ...fonts.regular,
-                      }}
-                    >
-                      {lang.name}
-                    </Text>
-                    {isSelected && (
-                      <CheckIcon color={theme.foreground} size={scale(18)} />
-                    )}
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        </Pressable>
-      </Modal>
     </View>
   );
 }

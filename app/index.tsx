@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
-import { View, Text, Pressable, Dimensions, ScrollView, TextInput, Linking } from "react-native";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { View, Text, Pressable, ScrollView, TextInput, Linking } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -9,17 +10,19 @@ import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useHaptics } from "@/hooks/useHaptics";
 import { PaywallModal } from "@/components/PaywallModal";
-import { OnboardingModal } from "@/components/OnboardingModal";
+import { RestoreModal } from "@/components/RestoreModal";
 import { TemplatePickerModal } from "@/components/TemplatePickerModal";
 import { MoreIcon } from "@/components/icons/MoreIcon";
 import { SearchIcon } from "@/components/icons/SearchIcon";
 import { CloseIcon } from "@/components/icons/CloseIcon";
 import { CheckIcon } from "@/components/icons/CheckIcon";
 import { PlusIcon } from "@/components/icons/PlusIcon";
+import { TrashIcon } from "@/components/icons/TrashIcon";
+import { Button } from "@/components/Button";
+import { IconButton } from "@/components/IconButton";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const POLAR_CHECKOUT_URL = "https://buy.polar.sh/polar_cl_qCd3hFE0efbUAbSDO16d4aCtF8BJzlGCRQf8u40mrSz";
 
 // Date categorization helper
@@ -71,9 +74,10 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
-  const { notes, setActiveNote, createNote, createNoteFromTemplate, deleteNote, isPremium, hasSeenOnboarding, setHasSeenOnboarding } = useNoteStore();
+  const { notes, setActiveNote, createNote, createNoteFromTemplate, deleteNote, isPremium, hasSeenOnboarding } = useNoteStore();
   const { impact, notification, ImpactStyle, NotificationType } = useHaptics();
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showRestore, setShowRestore] = useState(false);
   
   const handleDirectPurchase = async () => {
     await Linking.openURL(POLAR_CHECKOUT_URL);
@@ -83,22 +87,52 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   
-  const handleCloseOnboarding = () => {
-    setHasSeenOnboarding(true);
+  useEffect(() => {
+    if (!hasSeenOnboarding) {
+      router.replace("/onboarding");
+    }
+  }, [hasSeenOnboarding, router]);
+
+  const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
+  const [openSwipeId, setOpenSwipeId] = useState<string | null>(null);
+  const lastSwipeCloseAt = useRef(0);
+
+  const closeOpenSwipe = () => {
+    if (openSwipeId) {
+      swipeableRefs.current.get(openSwipeId)?.close();
+      setOpenSwipeId(null);
+      lastSwipeCloseAt.current = Date.now();
+    }
   };
 
-  const handleLongPress = (noteId: string) => {
+  const handleSwipeDelete = (noteId: string) => {
     impact(ImpactStyle.Medium);
     setNoteToDelete(noteId);
   };
 
   const handleConfirmDelete = () => {
     if (noteToDelete) {
+      swipeableRefs.current.get(noteToDelete)?.close();
       deleteNote(noteToDelete);
       notification(NotificationType.Success);
       setNoteToDelete(null);
+      setOpenSwipeId(null);
     }
   };
+
+  const renderRightActions = (noteId: string) => (
+    <View style={{ width: scale(44), justifyContent: "center", alignItems: "center" }}>
+      <IconButton
+        onPress={() => handleSwipeDelete(noteId)}
+        size="sm"
+        variant="destructive"
+        background={false}
+        icon={(color, size) => <TrashIcon color={color} size={size} />}
+        iconSize={scale(18)}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      />
+    </View>
+  );
 
   // Group notes by date (with search filtering)
   const groupedNotes = useMemo((): GroupedNotes[] => {
@@ -138,6 +172,13 @@ export default function HomeScreen() {
   }, [notes, searchQuery]);
 
   const handleNotePress = (noteId: string) => {
+    if (openSwipeId) {
+      closeOpenSwipe();
+      return;
+    }
+    if (Date.now() - lastSwipeCloseAt.current < 250) {
+      return;
+    }
     setActiveNote(noteId);
     router.push("/note");
   };
@@ -196,23 +237,27 @@ export default function HomeScreen() {
           {/* Right actions */}
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             {/* Search */}
-            <Pressable 
+            <IconButton
               onPress={() => {
                 setShowSearch(!showSearch);
                 if (showSearch) setSearchQuery("");
               }}
+              size="md"
+              background={false}
+              icon={(color, size) => <SearchIcon color={color} size={size} />}
+              iconSize={scale(20)}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            >
-              <SearchIcon color={theme.foreground} size={20} />
-            </Pressable>
+            />
 
             {/* Settings - 3 dots icon */}
-            <Pressable
+            <IconButton
               onPress={() => router.push("/settings")}
+              size="sm"
+              background={false}
+              icon={(color, size) => <MoreIcon color={color} size={size} />}
+              iconSize={scale(24)}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            >
-              <MoreIcon color={theme.foreground} size={24} />
-            </Pressable>
+            />
           </View>
         </View>
 
@@ -241,15 +286,19 @@ export default function HomeScreen() {
                   ...fonts.regular,
                 }}
               />
-              <Pressable
+              <IconButton
                 onPress={() => {
                   setShowSearch(false);
                   setSearchQuery("");
                 }}
+                size="sm"
+                background={false}
+                icon={(color, size) => (
+                  <CloseIcon color={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"} size={size} />
+                )}
+                iconSize={scale(18)}
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              >
-                <CloseIcon color={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"} size={18} />
-              </Pressable>
+              />
             </View>
           </View>
         )}
@@ -259,6 +308,8 @@ export default function HomeScreen() {
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingHorizontal: scale(24), paddingBottom: scale(160) + insets.bottom }}
           showsVerticalScrollIndicator={false}
+          onScrollBeginDrag={closeOpenSwipe}
+          onTouchStart={closeOpenSwipe}
         >
           {groupedNotes.map(({ group, notes: groupNotes }, groupIndex) => (
             <View key={group}>
@@ -279,26 +330,50 @@ export default function HomeScreen() {
               
               {/* Notes in this section */}
               {groupNotes.map((note) => (
-                <Pressable
+                <Swipeable
                   key={note.id}
-                  onPress={() => handleNotePress(note.id)}
-                  onLongPress={() => handleLongPress(note.id)}
-                  delayLongPress={500}
-                  style={{ marginBottom: scale(10) }}
+                  ref={(ref) => {
+                    if (ref) swipeableRefs.current.set(note.id, ref);
+                    else swipeableRefs.current.delete(note.id);
+                  }}
+                  renderRightActions={() => renderRightActions(note.id)}
+                  overshootRight={false}
+                  rightThreshold={scale(20)}
+                  friction={2}
+                  onSwipeableOpen={() => {
+                    if (openSwipeId && openSwipeId !== note.id) {
+                      swipeableRefs.current.get(openSwipeId)?.close();
+                    }
+                    setOpenSwipeId(note.id);
+                  }}
+                  onSwipeableClose={() => {
+                    if (openSwipeId === note.id) {
+                      setOpenSwipeId(null);
+                    }
+                  }}
                 >
-                  <Text
+                  <Pressable
+                    onPress={() => handleNotePress(note.id)}
                     style={{
-                      fontSize: fontScale(28),
-                      color: theme.foreground,
-                      maxWidth: SCREEN_WIDTH - scale(48),
-                      ...fonts.medium,
+                      marginBottom: scale(10),
+                      backgroundColor: theme.background,
+                      width: "100%",
+                      paddingRight: scale(44),
                     }}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
                   >
-                    {note.title || t("untitled")}
-                  </Text>
-                </Pressable>
+                    <Text
+                      style={{
+                        fontSize: fontScale(28),
+                        color: theme.foreground,
+                        ...fonts.medium,
+                      }}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {note.title || t("untitled")}
+                    </Text>
+                  </Pressable>
+                </Swipeable>
               ))}
             </View>
           ))}
@@ -367,7 +442,6 @@ export default function HomeScreen() {
 
             {/* Feature Rows */}
             {[
-              { label: t("templates"), free: false, premium: true },
               { label: t("shakeGesture"), free: false, premium: true },
               { label: t("darkMode"), free: false, premium: true },
               { label: t("unlimitedNotesFeatureShort"), free: false, premium: true },
@@ -405,31 +479,9 @@ export default function HomeScreen() {
               </View>
             ))}
 
-            {/* CTA Button - goes directly to payment */}
-            <Pressable
-              onPress={handleDirectPurchase}
-              style={{
-                marginTop: scale(20),
-                backgroundColor: theme.foreground,
-                paddingVertical: scale(16),
-                borderRadius: scale(16),
-                alignItems: "center",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: fontScale(16),
-                  color: theme.background,
-                  ...fonts.semibold,
-                }}
-              >
-                {t("unlockPremium")} — $4.99
-              </Text>
-            </Pressable>
-            
             <Text
               style={{
-                marginTop: 12,
+                marginTop: scale(20),
                 fontSize: fontScale(14),
                 color: theme.foreground,
                 textAlign: "center",
@@ -439,43 +491,42 @@ export default function HomeScreen() {
               {t("oneTimePurchase")}
             </Text>
 
+            {/* CTA Button - goes directly to payment */}
+            <Button
+              title={`${t("unlockPremium")} — $4.99`}
+              onPress={handleDirectPurchase}
+              variant="default"
+              fullWidth
+              style={{ marginTop: 8 }}
+            />
+
             {/* Restore purchase link */}
-            <Pressable 
-              onPress={() => setShowPaywall(true)}
-              style={{ alignItems: "center", marginTop: 8 }}
-            >
-              <Text
-                style={{
-                  fontSize: fontScale(13),
-                  color: theme.foreground,
-                  opacity: 0.4,
-                  ...fonts.regular,
-                }}
-              >
-                {t("restorePurchase")}
-              </Text>
-            </Pressable>
+            <Button
+              title={t("restorePurchase")}
+              onPress={() => setShowRestore(true)}
+              variant="muted"
+              fullWidth
+              style={{ marginTop: 8 }}
+            />
           </View>
         )}
 
         {/* Floating Add Button for Premium users (only when there are notes) */}
         {isPremium && notes.length > 0 && (
-          <Pressable
+          <IconButton
             onPress={handleNewNote}
+            size="lg"
+            variant="default"
+            background
             style={{
               position: "absolute",
-              bottom: scale(48) + insets.bottom,
-              right: scale(24),
-              width: scale(56),
-              height: scale(56),
-              borderRadius: scale(28),
-              backgroundColor: theme.foreground,
-              alignItems: "center",
-              justifyContent: "center",
+              bottom: scale(60) + insets.bottom,
+              alignSelf: "center",
+              left: "50%",
+              marginLeft: -scale(28),
             }}
-          >
-            <PlusIcon color={theme.background} size={scale(24)} />
-          </Pressable>
+            icon={(color, size) => <PlusIcon color={color} size={size} />}
+          />
         )}
 
       </View>
@@ -484,6 +535,7 @@ export default function HomeScreen() {
       <ConfirmDialog
         visible={!!noteToDelete}
         message={t("deleteNote")}
+        description={t("deleteNoteConfirm")}
         cancelLabel={t("cancel")}
         confirmLabel={t("delete")}
         onCancel={() => setNoteToDelete(null)}
@@ -493,11 +545,12 @@ export default function HomeScreen() {
       {/* Modals */}
       <PaywallModal 
         visible={showPaywall} 
-        onClose={() => setShowPaywall(false)} 
+        onClose={() => setShowPaywall(false)}
+        onRestore={() => setShowRestore(true)}
       />
-      <OnboardingModal
-        visible={!hasSeenOnboarding}
-        onClose={handleCloseOnboarding}
+      <RestoreModal
+        visible={showRestore}
+        onClose={() => setShowRestore(false)}
       />
       <TemplatePickerModal
         visible={showTemplatePicker}

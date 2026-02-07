@@ -1,12 +1,14 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
-import { fonts, colors } from "@/constants/theme";
+import { View, Text } from "react-native";
+import { fonts } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
+import { Button } from "@/components/Button";
 
 interface ConfirmDialogProps {
   visible: boolean;
   message: string;
+  description?: string;
   cancelLabel: string;
   confirmLabel: string;
   onCancel: () => void;
@@ -17,6 +19,7 @@ interface ConfirmDialogProps {
 export function ConfirmDialog({
   visible,
   message,
+  description,
   cancelLabel,
   confirmLabel,
   onCancel,
@@ -43,9 +46,9 @@ export function ConfirmDialog({
       <View
         style={{
           backgroundColor: theme.surface,
-          borderRadius: 12,
+          borderRadius: 20,
           padding: scale(24),
-          marginHorizontal: scale(40),
+          width: "85%",
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.25,
@@ -57,30 +60,41 @@ export function ConfirmDialog({
           style={{
             fontSize: fontScale(18),
             color: theme.foreground,
-            marginBottom: scale(20),
+            marginBottom: description ? scale(8) : scale(20),
             textAlign: "center",
             ...fonts.medium,
           }}
         >
           {message}
         </Text>
-        <View style={{ flexDirection: "row", justifyContent: "center", gap: scale(24) }}>
-          <Pressable onPress={onCancel}>
-            <Text style={{ color: theme.foreground, fontSize: fontScale(16), ...fonts.regular }}>
-              {cancelLabel}
-            </Text>
-          </Pressable>
-          <Pressable onPress={onConfirm}>
-            <Text
-              style={{
-                color: isDestructive ? colors.danger : theme.foreground,
-                fontSize: fontScale(16),
-                ...fonts.medium,
-              }}
-            >
-              {confirmLabel}
-            </Text>
-          </Pressable>
+        {description && (
+          <Text
+            style={{
+              fontSize: fontScale(14),
+              color: theme.foreground,
+              opacity: 0.6,
+              textAlign: "center",
+              marginBottom: scale(16),
+              ...fonts.regular,
+            }}
+          >
+            {description}
+          </Text>
+        )}
+        <View style={{ flexDirection: "row", gap: 8, marginTop: scale(20) }}>
+          <Button
+            title={cancelLabel}
+            onPress={onCancel}
+            variant="muted"
+            style={{ flex: 1 }}
+          />
+          <Button
+            title={confirmLabel}
+            onPress={onConfirm}
+            variant={isDestructive ? "destructive" : "default"}
+            style={{ flex: 1 }}
+            textStyle={fonts.medium}
+          />
         </View>
       </View>
     </View>

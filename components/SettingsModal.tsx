@@ -8,6 +8,8 @@ import { CloseIcon } from "@/components/icons/CloseIcon";
 import { SectionLabel } from "@/components/SectionLabel";
 import { ToggleRow } from "@/components/ToggleRow";
 import { LANGUAGES } from "@/i18n";
+import { Button } from "@/components/Button";
+import { IconButton } from "@/components/IconButton";
 
 interface SettingsModalProps {
   visible: boolean;
@@ -80,8 +82,12 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
           }}
         >
           {/* Close button */}
-          <Pressable
+          <IconButton
             onPress={onClose}
+            size="sm"
+            background={false}
+            icon={(color, size) => <CloseIcon color={color} size={size} />}
+            iconSize={20}
             hitSlop={12}
             style={{
               position: "absolute",
@@ -89,9 +95,7 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
               right: 16,
               zIndex: 1,
             }}
-          >
-            <CloseIcon color={theme.foreground} size={20} />
-          </Pressable>
+          />
 
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Title */}
@@ -119,30 +123,22 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
               {LANGUAGES.map((lang) => {
                 const isSelected = (language || i18n.language) === lang.code;
                 return (
-                  <Pressable
+                  <Button
                     key={lang.code}
                     onPress={() => handleLanguageChange(lang.code as LanguageCode)}
+                    title={lang.name}
+                    variant="muted"
+                    size="sm"
                     style={{
                       flex: 1,
-                      paddingVertical: 10,
-                      borderRadius: 20,
-                      backgroundColor: isSelected
-                        ? theme.foreground
-                        : theme.card,
-                      alignItems: "center",
+                      backgroundColor: isSelected ? theme.foreground : theme.card,
                     }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        color: isSelected ? theme.background : theme.foreground,
-                        opacity: isSelected ? 1 : 0.7,
-                        ...fonts.medium,
-                      }}
-                    >
-                      {lang.name}
-                    </Text>
-                  </Pressable>
+                    textStyle={{
+                      color: isSelected ? theme.background : theme.foreground,
+                      opacity: isSelected ? 1 : 0.7,
+                      ...fonts.medium,
+                    }}
+                  />
                 );
               })}
             </View>
@@ -174,31 +170,22 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
                       }),
                     }}
                   >
-                    <Pressable
+                    <Button
+                      title={option.label}
                       onPress={() => setThemeMode(option.value)}
+                      variant="muted"
+                      size="sm"
+                      fullWidth
                       style={{
-                        paddingVertical: 10,
-                        paddingHorizontal: 16,
-                        borderRadius: 20,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
                         backgroundColor: themeMode === option.value
                           ? theme.cardActive
                           : "transparent",
                       }}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 14,
-                          color: theme.foreground,
-                          opacity: themeMode === option.value ? 1 : 0.5,
-                          ...fonts.medium,
-                        }}
-                      >
-                        {option.label}
-                      </Text>
-                    </Pressable>
+                      textStyle={{
+                        opacity: themeMode === option.value ? 1 : 0.5,
+                        ...fonts.medium,
+                      }}
+                    />
                   </Animated.View>
                 ))}
               </View>
@@ -224,52 +211,31 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
             </View>
 
             {/* Other options */}
-            <Pressable
+            <Button
+              title={t("showOnboarding")}
               onPress={() => {
                 setHasSeenOnboarding(false);
                 onClose();
               }}
+              variant="muted"
+              fullWidth
               style={{
-                paddingVertical: 10,
-                paddingHorizontal: 12,
                 marginBottom: 20,
-                borderRadius: 20,
                 backgroundColor: theme.card,
               }}
-            >
-              <Text
-                style={{
-                  fontSize: 15,
-                  color: theme.foreground,
-                  ...fonts.regular,
-                }}
-              >
-                {t("showOnboarding")}
-              </Text>
-            </Pressable>
+            />
 
             {/* Delete Data Section */}
             <SectionLabel>{t("data")}</SectionLabel>
 
             {!showDeleteConfirm ? (
-              <Pressable
+              <Button
+                title={t("deleteAllData")}
                 onPress={() => setShowDeleteConfirm(true)}
-                style={{
-                  paddingVertical: 10,
-                  paddingHorizontal: 12,
-                  marginBottom: 20,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 15,
-                    color: colors.danger,
-                    ...fonts.regular,
-                  }}
-                >
-                  {t("deleteAllData")}
-                </Text>
-              </Pressable>
+                variant="destructive"
+                fullWidth
+                style={{ marginBottom: 20 }}
+              />
             ) : (
               <View style={{ marginBottom: 20, paddingHorizontal: 12 }}>
                 <Text
@@ -283,49 +249,37 @@ export function SettingsModal({ visible, onClose }: SettingsModalProps) {
                 >
                   {t("deleteAllDataConfirm")}
                 </Text>
-                <View style={{ flexDirection: "row", gap: 20 }}>
-                  <Pressable onPress={() => setShowDeleteConfirm(false)}>
-                    <Text style={{ color: theme.foreground, fontSize: 15, ...fonts.regular }}>
-                      {t("cancel")}
-                    </Text>
-                  </Pressable>
-                  <Pressable
+                <View style={{ flexDirection: "row", gap: 8 }}>
+                  <Button
+                    title={t("cancel")}
+                    onPress={() => setShowDeleteConfirm(false)}
+                    variant="muted"
+                    style={{ flex: 1 }}
+                  />
+                  <Button
+                    title={t("delete")}
                     onPress={() => {
                       resetAllData();
                       setShowDeleteConfirm(false);
                       onClose();
                     }}
-                  >
-                    <Text style={{ color: colors.danger, fontSize: 15, ...fonts.regular }}>
-                      {t("delete")}
-                    </Text>
-                  </Pressable>
+                    variant="destructive"
+                    style={{ flex: 1 }}
+                  />
                 </View>
               </View>
             )}
           </ScrollView>
 
           {/* Done button */}
-          <Pressable
+          <Button
+            title={t("done")}
             onPress={onClose}
-            style={{
-              backgroundColor: theme.foreground,
-              paddingVertical: 14,
-              borderRadius: 24,
-              alignItems: "center",
-              marginTop: 8,
-            }}
-          >
-            <Text
-              style={{
-                color: theme.background,
-                fontSize: 15,
-                ...fonts.regular,
-              }}
-            >
-              {t("done")}
-            </Text>
-          </Pressable>
+            variant="default"
+            size="lg"
+            fullWidth
+            style={{ marginTop: 8 }}
+          />
         </View>
       </View>
     </Modal>

@@ -1,8 +1,7 @@
 import React from "react";
-import { Pressable } from "react-native";
 import { scale } from "@/constants/responsive";
-import { useAppTheme } from "@/hooks/useAppTheme";
 import { PlusIcon } from "@/components/icons/PlusIcon";
+import { IconButton } from "@/components/IconButton";
 
 interface FloatingAddButtonProps {
   onPress: () => void;
@@ -15,24 +14,19 @@ export function FloatingAddButton({
   bottom = 48,
   right = 24,
 }: FloatingAddButtonProps) {
-  const { theme } = useAppTheme();
-
   return (
-    <Pressable
+    <IconButton
       onPress={onPress}
+      size="md"
+      variant="default"
+      background
       style={{
         position: "absolute",
         bottom: scale(bottom),
         right: scale(right),
-        width: scale(44),
-        height: scale(44),
-        borderRadius: scale(22),
-        backgroundColor: theme.foreground,
-        alignItems: "center",
-        justifyContent: "center",
       }}
-    >
-      <PlusIcon color={theme.background} size={scale(22)} />
-    </Pressable>
+      icon={(color, size) => <PlusIcon color={color} size={size} />}
+      iconSize={scale(22)}
+    />
   );
 }

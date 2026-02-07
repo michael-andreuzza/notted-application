@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text } from "react-native";
 import { fonts } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { PlusIcon } from "@/components/icons/PlusIcon";
+import { IconButton } from "@/components/IconButton";
 
 interface EmptyStateProps {
   title: string;
@@ -12,7 +13,7 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ title, subtitle, onAction }: EmptyStateProps) {
-  const { isDark, theme } = useAppTheme();
+  const { isDark } = useAppTheme();
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -20,7 +21,8 @@ export function EmptyState({ title, subtitle, onAction }: EmptyStateProps) {
         style={{
           fontSize: fontScale(28),
           color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
-          ...fonts.regular,
+          letterSpacing: -0.3,
+          ...fonts.medium,
         }}
       >
         {title}
@@ -38,20 +40,15 @@ export function EmptyState({ title, subtitle, onAction }: EmptyStateProps) {
         </Text>
       )}
       {onAction && (
-        <Pressable
+        <IconButton
           onPress={onAction}
-          style={{
-            marginTop: scale(24),
-            width: scale(56),
-            height: scale(56),
-            borderRadius: scale(28),
-            backgroundColor: theme.foreground,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <PlusIcon color={theme.background} size={scale(28)} />
-        </Pressable>
+          size="lg"
+          variant="default"
+          background
+          style={{ marginTop: scale(24) }}
+          icon={(color, size) => <PlusIcon color={color} size={size} />}
+          iconSize={scale(28)}
+        />
       )}
     </View>
   );

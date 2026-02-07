@@ -24,6 +24,8 @@ import { TemplatePickerModal } from "@/components/TemplatePickerModal";
 import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon";
 import { MoreIcon } from "@/components/icons/MoreIcon";
 import { TrashIcon } from "@/components/icons/TrashIcon";
+import { Button } from "@/components/Button";
+import { IconButton } from "@/components/IconButton";
 import { CheckIcon } from "@/components/icons/CheckIcon";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -283,32 +285,32 @@ export default function NoteScreen() {
             marginBottom: scale(16),
           }}
         >
-          <Pressable
+          <IconButton
             onPress={handleBack}
+            size="sm"
+            background={false}
+            icon={(color, size) => <ArrowLeftIcon color={color} size={size} />}
+            iconSize={scale(24)}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          >
-            <ArrowLeftIcon color={theme.foreground} size={scale(24)} />
-          </Pressable>
+          />
 
           <View style={{ flexDirection: "row", alignItems: "center", gap: scale(16) }}>
-            <Pressable onPress={handleNewNote}>
-              <Text
-                style={{
-                  fontSize: fontScale(16),
-                  color: theme.foreground,
-                  ...fonts.regular,
-                }}
-              >
-                {t("newNote")}
-              </Text>
-            </Pressable>
+            <Button
+              title={t("newNote")}
+              onPress={handleNewNote}
+              variant="muted"
+              size="sm"
+              background={false}
+              style={{ paddingVertical: 0, paddingHorizontal: 0 }}
+            />
 
-            <Pressable
+            <IconButton
               onPress={() => router.push("/settings")}
+              size="sm"
+              background={false}
+              icon={(color, size) => <MoreIcon color={color} size={size} />}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            >
-              <MoreIcon color={theme.foreground} size={scale(24)} />
-            </Pressable>
+            />
           </View>
         </View>
 
@@ -344,39 +346,42 @@ export default function NoteScreen() {
             marginBottom: 8,
           }}
         >
-          <Pressable
+          <IconButton
             onPress={handleBack}
+            size="sm"
+            background={false}
+            icon={(color, size) => <ArrowLeftIcon color={color} size={size} />}
+            iconSize={scale(24)}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          >
-            <ArrowLeftIcon color={theme.foreground} size={scale(24)} />
-          </Pressable>
+          />
 
           <View style={{ flexDirection: "row", alignItems: "center", gap: scale(16) }}>
-            <Pressable onPress={handleNewNote}>
-              <Text
-                style={{
-                  fontSize: fontScale(16),
-                  color: theme.foreground,
-                  ...fonts.regular,
-                }}
-              >
-                {t("newNote")}
-              </Text>
-            </Pressable>
+            <Button
+              title={t("newNote")}
+              onPress={handleNewNote}
+              variant="muted"
+              size="sm"
+              background={false}
+              style={{ paddingVertical: 0, paddingHorizontal: 0 }}
+            />
 
-            <Pressable
+            <IconButton
               onPress={() => setShowDeleteConfirm(true)}
+              size="sm"
+              background={false}
+              icon={(color, size) => <TrashIcon color={color} size={size} />}
+              iconSize={scale(20)}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            >
-              <TrashIcon color={theme.foreground} size={scale(20)} />
-            </Pressable>
+            />
 
-            <Pressable
+            <IconButton
               onPress={() => router.push("/settings")}
+              size="sm"
+              background={false}
+              icon={(color, size) => <MoreIcon color={color} size={size} />}
+              iconSize={scale(24)}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            >
-              <MoreIcon color={theme.foreground} size={scale(24)} />
-            </Pressable>
+            />
           </View>
         </View>
 
@@ -552,6 +557,7 @@ export default function NoteScreen() {
         <ConfirmDialog
           visible={showDeleteConfirm}
           message={t("deleteNote")}
+          description={t("deleteNoteConfirm")}
           cancelLabel={t("cancel")}
           confirmLabel={t("delete")}
           onCancel={() => setShowDeleteConfirm(false)}
@@ -633,73 +639,44 @@ export default function NoteScreen() {
           >
             {/* Save as Template option (premium only) */}
             {isPremium && (
-              <Pressable
+              <Button
+                title={t("saveAsTemplate")}
                 onPress={handleSaveAsTemplate}
-                style={{
-                  paddingVertical: scale(16),
-                  paddingHorizontal: scale(20),
-                  borderRadius: 12,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: fontScale(16),
-                    color: theme.foreground,
-                    ...fonts.regular,
-                  }}
-                >
-                  {t("saveAsTemplate")}
-                </Text>
-              </Pressable>
+                variant="muted"
+                background={false}
+                size="md"
+                style={{ paddingHorizontal: scale(20) }}
+              />
             )}
 
             {/* Settings option */}
-            <Pressable
+            <Button
+              title={t("settings")}
               onPress={() => {
                 setShowOptionsMenu(false);
                 router.push("/settings");
               }}
-              style={{
-                paddingVertical: scale(16),
-                paddingHorizontal: scale(20),
-                borderRadius: 12,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: fontScale(16),
-                  color: theme.foreground,
-                  ...fonts.regular,
-                }}
-              >
-                {t("settings")}
-              </Text>
-            </Pressable>
+              variant="muted"
+              background={false}
+              size="md"
+              style={{ paddingHorizontal: scale(20) }}
+            />
 
             {/* Cancel option */}
-            <Pressable
+            <Button
+              title={t("cancel")}
               onPress={() => setShowOptionsMenu(false)}
+              variant="muted"
+              background={false}
+              size="md"
               style={{
-                paddingVertical: scale(16),
                 paddingHorizontal: scale(20),
-                borderRadius: 12,
                 marginTop: 4,
                 borderTopWidth: 1,
                 borderTopColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
               }}
-            >
-              <Text
-                style={{
-                  fontSize: fontScale(16),
-                  color: theme.foreground,
-                  opacity: 0.5,
-                  textAlign: "center",
-                  ...fonts.regular,
-                }}
-              >
-                {t("cancel")}
-              </Text>
-            </Pressable>
+              textStyle={{ opacity: 0.5, textAlign: "center" }}
+            />
           </View>
         </Pressable>
       </Modal>
