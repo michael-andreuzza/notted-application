@@ -9,19 +9,21 @@ import { fonts } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useHaptics } from "@/hooks/useHaptics";
-import { PaywallModal } from "@/components/PaywallModal";
-import { RestoreModal } from "@/components/RestoreModal";
-import { TemplatePickerModal } from "@/components/TemplatePickerModal";
+import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
+import { TopBar } from "@/components/layout/TopBar";
+import { PaywallModal } from "@/components/modals/PaywallModal";
+import { RestoreModal } from "@/components/modals/RestoreModal";
+import { TemplatePickerModal } from "@/components/modals/TemplatePickerModal";
 import { MoreIcon } from "@/components/icons/MoreIcon";
 import { SearchIcon } from "@/components/icons/SearchIcon";
 import { CloseIcon } from "@/components/icons/CloseIcon";
 import { CheckIcon } from "@/components/icons/CheckIcon";
 import { PlusIcon } from "@/components/icons/PlusIcon";
 import { TrashIcon } from "@/components/icons/TrashIcon";
-import { Button } from "@/components/Button";
-import { IconButton } from "@/components/IconButton";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { EmptyState } from "@/components/EmptyState";
+import { Button } from "@/components/elements/Button";
+import { IconButton } from "@/components/elements/IconButton";
+import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
+import { EmptyState } from "@/components/feedback/EmptyState";
 
 const POLAR_CHECKOUT_URL = "https://buy.polar.sh/polar_cl_qCd3hFE0efbUAbSDO16d4aCtF8BJzlGCRQf8u40mrSz";
 
@@ -209,34 +211,23 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background }}>
-      {/* Content */}
-      <View style={{ flex: 1, paddingTop: scale(50) }}>
-        {/* Top Navigation */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingHorizontal: scale(24),
-            paddingVertical: 8,
-            marginBottom: scale(16),
-          }}
-        >
-          {/* App name */}
+    <ScreenWrapper>
+      <TopBar
+        paddingHorizontal={scale(24)}
+        left={
           <Text
             style={{
               fontSize: fontScale(28),
               color: theme.foreground,
-              ...fonts.regular,
+              letterSpacing: -0.5,
+              ...fonts.semibold,
             }}
           >
             notted
           </Text>
-
-          {/* Right actions */}
+        }
+        right={
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            {/* Search */}
             <IconButton
               onPress={() => {
                 setShowSearch(!showSearch);
@@ -248,8 +239,6 @@ export default function HomeScreen() {
               iconSize={scale(20)}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             />
-
-            {/* Settings - 3 dots icon */}
             <IconButton
               onPress={() => router.push("/settings")}
               size="sm"
@@ -259,7 +248,8 @@ export default function HomeScreen() {
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             />
           </View>
-        </View>
+        }
+      />
 
         {/* Search Input */}
         {showSearch && (
@@ -278,6 +268,7 @@ export default function HomeScreen() {
                 placeholder={t("search")}
                 placeholderTextColor={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"}
                 autoFocus
+                underlineColorAndroid="transparent"
                 style={{
                   flex: 1,
                   fontSize: fontScale(16),
@@ -389,127 +380,124 @@ export default function HomeScreen() {
             </View>
           )}
 
-        </ScrollView>
-
-        {/* Premium Banner - fixed at bottom, show if not premium */}
-        {!isPremium && (
-          <View
-            style={{
-              position: "absolute",
-              bottom: scale(72) + insets.bottom,
-              left: scale(24),
-              right: scale(24),
-              padding: scale(24),
-              backgroundColor: theme.surface,
-              borderRadius: scale(24),
-            }}
-          >
-            {/* Table Header */}
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: scale(20) }}>
-              <View style={{ flex: 1 }} />
-              <Text
-                style={{
-                  width: scale(70),
-                  textAlign: "center",
-                  fontSize: fontScale(13),
-                  color: theme.foreground,
-                  ...fonts.medium,
-                }}
-              >
-                {t("free")}
-              </Text>
-              <View
-                style={{
-                  width: scale(80),
-                  paddingVertical: 8,
-                  borderRadius: 20,
-                  backgroundColor: theme.foreground,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
+          {/* Premium Banner - inside scroll so it never overlaps content */}
+          {!isPremium && (
+            <View
+              style={{
+                marginTop: scale(40),
+                padding: scale(24),
+                backgroundColor: theme.surface,
+                borderRadius: scale(24),
+              }}
+            >
+              {/* Table Header */}
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: scale(20) }}>
+                <View style={{ flex: 1 }} />
                 <Text
                   style={{
+                    width: scale(70),
+                    textAlign: "center",
                     fontSize: fontScale(13),
-                    color: theme.background,
-                    ...fonts.medium,
-                  }}
-                >
-                  {t("premium")}
-                </Text>
-              </View>
-            </View>
-
-            {/* Feature Rows */}
-            {[
-              { label: t("shakeGesture"), free: false, premium: true },
-              { label: t("darkMode"), free: false, premium: true },
-              { label: t("unlimitedNotesFeatureShort"), free: false, premium: true },
-            ].map((feature, index) => (
-              <View
-                key={index}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  paddingVertical: 12,
-                  borderTopWidth: index > 0 ? 1 : 0,
-                  borderTopColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-                }}
-              >
-                <Text
-                  style={{
-                    flex: 1,
-                    fontSize: fontScale(15),
                     color: theme.foreground,
                     ...fonts.medium,
                   }}
                 >
-                  {feature.label}
+                  {t("free")}
                 </Text>
-                <View style={{ width: scale(70), alignItems: "center" }}>
-                  {feature.free && (
-                    <CheckIcon color={theme.foreground} size={scale(18)} />
-                  )}
-                </View>
-                <View style={{ width: scale(80), alignItems: "center" }}>
-                  {feature.premium && (
-                    <CheckIcon color={theme.foreground} size={scale(18)} />
-                  )}
+                <View
+                  style={{
+                    width: scale(80),
+                    paddingVertical: 8,
+                    borderRadius: 20,
+                    backgroundColor: theme.foreground,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: fontScale(13),
+                      color: theme.background,
+                      ...fonts.medium,
+                    }}
+                  >
+                    {t("premium")}
+                  </Text>
                 </View>
               </View>
-            ))}
 
-            <Text
-              style={{
-                marginTop: scale(20),
-                fontSize: fontScale(14),
-                color: theme.foreground,
-                textAlign: "center",
-                ...fonts.regular,
-              }}
-            >
-              {t("oneTimePurchase")}
-            </Text>
+              {/* Feature Rows */}
+              {[
+                { label: t("shakeGesture"), free: false, premium: true },
+                { label: t("darkMode"), free: false, premium: true },
+                { label: t("unlimitedNotesFeatureShort"), free: false, premium: true },
+              ].map((feature, index) => (
+                <View
+                  key={index}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingVertical: 12,
+                    borderTopWidth: index > 0 ? 1 : 0,
+                    borderTopColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                  }}
+                >
+                  <Text
+                    style={{
+                      flex: 1,
+                      fontSize: fontScale(15),
+                      color: theme.foreground,
+                      ...fonts.medium,
+                    }}
+                  >
+                    {feature.label}
+                  </Text>
+                  <View style={{ width: scale(70), alignItems: "center" }}>
+                    {feature.free && (
+                      <CheckIcon color={theme.foreground} size={scale(18)} />
+                    )}
+                  </View>
+                  <View style={{ width: scale(80), alignItems: "center" }}>
+                    {feature.premium && (
+                      <CheckIcon color={theme.foreground} size={scale(18)} />
+                    )}
+                  </View>
+                </View>
+              ))}
 
-            {/* CTA Button - goes directly to payment */}
-            <Button
-              title={`${t("unlockPremium")} — $4.99`}
-              onPress={handleDirectPurchase}
-              variant="default"
-              fullWidth
-              style={{ marginTop: 8 }}
-            />
+              <Text
+                style={{
+                  marginTop: scale(20),
+                  fontSize: fontScale(14),
+                  color: theme.foreground,
+                  textAlign: "center",
+                  ...fonts.regular,
+                }}
+              >
+                {t("oneTimePurchase")}
+              </Text>
 
-            {/* Restore purchase link */}
-            <Button
-              title={t("restorePurchase")}
-              onPress={() => setShowRestore(true)}
-              variant="muted"
-              fullWidth
-              style={{ marginTop: 8 }}
-            />
-          </View>
-        )}
+              {/* CTA Button - goes directly to payment */}
+              <Button
+                title={`${t("unlockPremium")} — $4.99`}
+                onPress={handleDirectPurchase}
+                variant="default"
+                fullWidth
+                style={{ marginTop: 8 }}
+              />
+
+              {/* Restore purchase link */}
+              <Button
+                title={t("restorePurchase")}
+                onPress={() => setShowRestore(true)}
+                variant="muted"
+                fullWidth
+                style={{ marginTop: 8 }}
+              />
+            </View>
+          )}
+
+        </ScrollView>
 
         {/* Floating Add Button for Premium users (only when there are notes) */}
         {isPremium && notes.length > 0 && (
@@ -528,8 +516,6 @@ export default function HomeScreen() {
             icon={(color, size) => <PlusIcon color={color} size={size} />}
           />
         )}
-
-      </View>
 
       {/* Delete confirmation */}
       <ConfirmDialog
@@ -558,6 +544,6 @@ export default function HomeScreen() {
         onSelectTemplate={handleSelectTemplate}
         onStartEmpty={handleStartEmpty}
       />
-    </View>
+    </ScreenWrapper>
   );
 }

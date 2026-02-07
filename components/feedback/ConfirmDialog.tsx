@@ -3,7 +3,7 @@ import { View, Text } from "react-native";
 import { fonts } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
-import { Button } from "@/components/Button";
+import { Button } from "../elements/Button";
 
 interface ConfirmDialogProps {
   visible: boolean;

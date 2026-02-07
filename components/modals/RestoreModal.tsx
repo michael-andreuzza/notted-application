@@ -6,7 +6,7 @@ import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useNoteStore } from "@/stores/noteStore";
 import { RESTORE_ENDPOINT } from "@/constants/supabase";
-import { Button } from "@/components/Button";
+import { Button } from "../elements/Button";
 
 interface RestoreModalProps {
   visible: boolean;
@@ -117,6 +117,7 @@ export function RestoreModal({ visible, onClose }: RestoreModalProps) {
             autoCapitalize="none"
             autoCorrect={false}
             autoFocus
+            underlineColorAndroid="transparent"
             style={{
               backgroundColor: theme.card,
               borderRadius: 10,

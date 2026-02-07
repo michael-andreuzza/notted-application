@@ -3,8 +3,8 @@ import { View, Text } from "react-native";
 import { fonts } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
-import { PlusIcon } from "@/components/icons/PlusIcon";
-import { IconButton } from "@/components/IconButton";
+import { PlusIcon } from "../icons/PlusIcon";
+import { IconButton } from "../elements/IconButton";
 
 interface EmptyStateProps {
   title: string;

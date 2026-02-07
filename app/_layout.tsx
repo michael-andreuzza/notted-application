@@ -97,6 +97,7 @@ export default function RootLayout() {
           contentStyle: {
             backgroundColor: theme.background,
           },
+          animation: "slide_from_right",
         }}
       />
       <StatusBar style={isDark ? "light" : "dark"} />

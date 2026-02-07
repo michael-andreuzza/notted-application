@@ -5,9 +5,9 @@ import { useTranslation } from "react-i18next";
 import { fonts } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
-import { CloseIcon } from "@/components/icons/CloseIcon";
-import { Button } from "@/components/Button";
-import { IconButton } from "@/components/IconButton";
+import { CloseIcon } from "../icons/CloseIcon";
+import { Button } from "../elements/Button";
+import { IconButton } from "../elements/IconButton";
 
 const POLAR_CHECKOUT_URL = "https://buy.polar.sh/polar_cl_qCd3hFE0efbUAbSDO16d4aCtF8BJzlGCRQf8u40mrSz";
 

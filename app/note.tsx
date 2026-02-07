@@ -5,8 +5,6 @@ import {
   TextInput,
   Pressable,
   ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   BackHandler,
   Modal,
 } from "react-native";
@@ -19,16 +17,18 @@ import { fonts } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useHaptics } from "@/hooks/useHaptics";
-import { PaywallModal } from "@/components/PaywallModal";
-import { TemplatePickerModal } from "@/components/TemplatePickerModal";
+import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
+import { TopBar } from "@/components/layout/TopBar";
+import { PaywallModal } from "@/components/modals/PaywallModal";
+import { TemplatePickerModal } from "@/components/modals/TemplatePickerModal";
 import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon";
 import { MoreIcon } from "@/components/icons/MoreIcon";
 import { TrashIcon } from "@/components/icons/TrashIcon";
-import { Button } from "@/components/Button";
-import { IconButton } from "@/components/IconButton";
+import { Button } from "@/components/elements/Button";
+import { IconButton } from "@/components/elements/IconButton";
 import { CheckIcon } from "@/components/icons/CheckIcon";
-import { EmptyState } from "@/components/EmptyState";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { EmptyState } from "@/components/feedback/EmptyState";
+import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
 
 export default function NoteScreen() {
   const router = useRouter();
@@ -273,46 +273,38 @@ export default function NoteScreen() {
 
   if (!note) {
     return (
-      <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: scale(50) }}>
-        {/* Top Navigation */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingHorizontal: scale(16),
-            paddingVertical: 8,
-            marginBottom: scale(16),
-          }}
-        >
-          <IconButton
-            onPress={handleBack}
-            size="sm"
-            background={false}
-            icon={(color, size) => <ArrowLeftIcon color={color} size={size} />}
-            iconSize={scale(24)}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          />
-
-          <View style={{ flexDirection: "row", alignItems: "center", gap: scale(16) }}>
-            <Button
-              title={t("newNote")}
-              onPress={handleNewNote}
-              variant="muted"
-              size="sm"
-              background={false}
-              style={{ paddingVertical: 0, paddingHorizontal: 0 }}
-            />
-
+      <ScreenWrapper>
+        <TopBar
+          left={
             <IconButton
-              onPress={() => router.push("/settings")}
+              onPress={handleBack}
               size="sm"
               background={false}
-              icon={(color, size) => <MoreIcon color={color} size={size} />}
+              icon={(color, size) => <ArrowLeftIcon color={color} size={size} />}
+              iconSize={scale(24)}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             />
-          </View>
-        </View>
+          }
+          right={
+            <View style={{ flexDirection: "row", alignItems: "center", gap: scale(16) }}>
+              <Button
+                title={t("newNote")}
+                onPress={handleNewNote}
+                variant="muted"
+                size="sm"
+                background={false}
+                style={{ paddingVertical: 0, paddingHorizontal: 0 }}
+              />
+              <IconButton
+                onPress={() => router.push("/settings")}
+                size="sm"
+                background={false}
+                icon={(color, size) => <MoreIcon color={color} size={size} />}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              />
+            </View>
+          }
+        />
 
         <EmptyState
           title={t("noNotesYet")}
@@ -324,28 +316,15 @@ export default function NoteScreen() {
           visible={showPaywall} 
           onClose={() => setShowPaywall(false)} 
         />
-      </View>
+      </ScreenWrapper>
     );
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: theme.background }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-    >
-      <View style={{ flex: 1, paddingTop: scale(50) }}>
-        {/* Top Navigation */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingHorizontal: scale(16),
-            paddingVertical: 8,
-            marginBottom: 8,
-          }}
-        >
+    <ScreenWrapper keyboard>
+      <TopBar
+        marginBottom={8}
+        left={
           <IconButton
             onPress={handleBack}
             size="sm"
@@ -354,26 +333,18 @@ export default function NoteScreen() {
             iconSize={scale(24)}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           />
-
+        }
+        right={
           <View style={{ flexDirection: "row", alignItems: "center", gap: scale(16) }}>
-            <Button
-              title={t("newNote")}
-              onPress={handleNewNote}
-              variant="muted"
-              size="sm"
-              background={false}
-              style={{ paddingVertical: 0, paddingHorizontal: 0 }}
-            />
-
             <IconButton
               onPress={() => setShowDeleteConfirm(true)}
               size="sm"
+              variant="destructive"
               background={false}
               icon={(color, size) => <TrashIcon color={color} size={size} />}
               iconSize={scale(20)}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             />
-
             <IconButton
               onPress={() => router.push("/settings")}
               size="sm"
@@ -383,7 +354,8 @@ export default function NoteScreen() {
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             />
           </View>
-        </View>
+        }
+      />
 
         {/* Title Input */}
         <View style={{ paddingHorizontal: scale(24), marginBottom: scale(16) }}>
@@ -392,9 +364,11 @@ export default function NoteScreen() {
             onChangeText={(text) => updateNoteTitle(note.id, text)}
             placeholder={t("noteTitle")}
             placeholderTextColor={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"}
+            underlineColorAndroid="transparent"
             style={{
               fontSize: fontScale(28),
               color: theme.foreground,
+              padding: 0,
               ...fonts.semibold,
             }}
           />
@@ -483,11 +457,13 @@ export default function NoteScreen() {
                     returnKeyType="next"
                     placeholder={t("addItem")}
                     placeholderTextColor={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)"}
+                    underlineColorAndroid="transparent"
                     style={{
                       flex: 1,
                       fontSize: fontScale(18),
                       color: theme.foreground,
                       paddingVertical: scale(8),
+                      paddingHorizontal: 0,
                       textDecorationLine: item.isChecked ? "line-through" : "none",
                       opacity: item.isChecked ? 0.5 : 1,
                       ...fonts.regular,
@@ -538,11 +514,13 @@ export default function NoteScreen() {
                 onChangeText={(text) => updateContent(note.id, text)}
                 placeholder={t("startWriting")}
                 placeholderTextColor={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"}
+                underlineColorAndroid="transparent"
                 style={{
                   fontSize: fontScale(18),
                   color: theme.foreground,
                   lineHeight: fontScale(28),
                   minHeight: 200,
+                  padding: 0,
                   ...fonts.regular,
                 }}
                 multiline
@@ -573,7 +551,6 @@ export default function NoteScreen() {
             }
           }}
         />
-      </View>
 
       {/* Cleared message */}
       {showClearedMessage && (
@@ -694,6 +671,6 @@ export default function NoteScreen() {
         onSelectTemplate={handleSelectTemplate}
         onStartEmpty={handleStartEmpty}
       />
-    </KeyboardAvoidingView>
+    </ScreenWrapper>
   );
 }

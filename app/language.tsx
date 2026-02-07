@@ -8,10 +8,12 @@ import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useNoteStore, LanguageCode } from "@/stores/noteStore";
 import { LANGUAGES } from "@/i18n";
+import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
+import { TopBar } from "@/components/layout/TopBar";
 import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon";
 import { CheckIcon } from "@/components/icons/CheckIcon";
-import { Button } from "@/components/Button";
-import { IconButton } from "@/components/IconButton";
+import { Button } from "@/components/elements/Button";
+import { IconButton } from "@/components/elements/IconButton";
 
 export default function LanguageScreen() {
   const { theme } = useAppTheme();
@@ -28,34 +30,21 @@ export default function LanguageScreen() {
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: theme.background,
-        paddingTop: scale(50) + insets.top,
-        paddingBottom: scale(24) + insets.bottom,
-      }}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          paddingHorizontal: scale(16),
-          paddingVertical: 8,
-          marginBottom: 8,
-        }}
-      >
-        <IconButton
-          onPress={() => router.back()}
-          size="sm"
-          background={false}
-          icon={(color, size) => <ArrowLeftIcon color={color} size={size} />}
-          iconSize={scale(24)}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        />
-        <View style={{ width: scale(24) }} />
-      </View>
+    <ScreenWrapper>
+      <TopBar
+        marginBottom={8}
+        left={
+          <IconButton
+            onPress={() => router.back()}
+            size="sm"
+            background={false}
+            icon={(color, size) => <ArrowLeftIcon color={color} size={size} />}
+            iconSize={scale(24)}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          />
+        }
+        right={<View style={{ width: scale(24) }} />}
+      />
 
       <View style={{ paddingHorizontal: scale(24), marginBottom: scale(16) }}>
         <Text
@@ -72,7 +61,7 @@ export default function LanguageScreen() {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: scale(24),
-          paddingBottom: scale(24),
+          paddingBottom: scale(24) + insets.bottom,
           gap: 8,
         }}
         showsVerticalScrollIndicator={false}
@@ -95,6 +84,6 @@ export default function LanguageScreen() {
           );
         })}
       </ScrollView>
-    </View>
+    </ScreenWrapper>
   );
 }

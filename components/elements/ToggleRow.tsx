@@ -3,7 +3,7 @@ import { Text, Pressable } from "react-native";
 import { fonts } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
-import { CheckIcon } from "@/components/icons/CheckIcon";
+import { CheckIcon } from "../icons/CheckIcon";
 
 interface ToggleRowProps {
   label: string;

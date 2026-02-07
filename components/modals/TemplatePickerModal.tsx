@@ -5,7 +5,7 @@ import { fonts } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { NoteType } from "@/stores/noteStore";
-import { Button } from "@/components/Button";
+import { Button } from "../elements/Button";
 
 interface TemplatePickerModalProps {
   visible: boolean;

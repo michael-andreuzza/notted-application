@@ -12,14 +12,16 @@ import { fonts } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
 import { useNoteStore, ThemeMode } from "@/stores/noteStore";
 import { useAppTheme } from "@/hooks/useAppTheme";
+import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
+import { TopBar } from "@/components/layout/TopBar";
 import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon";
 import { ChevronRightIcon } from "@/components/icons/ChevronRightIcon";
 import { ExternalLinkIcon } from "@/components/icons/ExternalLinkIcon";
-import { SectionLabel } from "@/components/SectionLabel";
-import { ToggleRow } from "@/components/ToggleRow";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { Button } from "@/components/Button";
-import { IconButton } from "@/components/IconButton";
+import { SectionLabel } from "@/components/elements/SectionLabel";
+import { ToggleRow } from "@/components/elements/ToggleRow";
+import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
+import { Button } from "@/components/elements/Button";
+import { IconButton } from "@/components/elements/IconButton";
 import { LANGUAGES } from "@/i18n";
 
 export default function SettingsScreen() {
@@ -57,40 +59,31 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: scale(50) }}>
-      {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          paddingHorizontal: scale(16),
-          paddingVertical: 8,
-          marginBottom: scale(16),
-        }}
-      >
-        <IconButton
-          onPress={() => router.back()}
-          size="sm"
-          background={false}
-          icon={(color, size) => <ArrowLeftIcon color={color} size={size} />}
-          iconSize={scale(24)}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        />
-
-        <Text
-          style={{
-            fontSize: fontScale(18),
-            color: theme.foreground,
-            ...fonts.medium,
-          }}
-        >
-          {t("settings")}
-        </Text>
-
-        {/* Spacer for centering */}
-        <View style={{ width: scale(24) }} />
-      </View>
+    <ScreenWrapper>
+      <TopBar
+        left={
+          <IconButton
+            onPress={() => router.back()}
+            size="sm"
+            background={false}
+            icon={(color, size) => <ArrowLeftIcon color={color} size={size} />}
+            iconSize={scale(24)}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          />
+        }
+        center={
+          <Text
+            style={{
+              fontSize: fontScale(18),
+              color: theme.foreground,
+              ...fonts.medium,
+            }}
+          >
+            {t("settings")}
+          </Text>
+        }
+        right={<View style={{ width: scale(24) }} />}
+      />
 
       <ScrollView
         style={{ flex: 1 }}
@@ -246,7 +239,6 @@ export default function SettingsScreen() {
         onCancel={() => setShowDeleteConfirm(false)}
         onConfirm={handleDeleteAllData}
       />
-
-    </View>
+    </ScreenWrapper>
   );
 }
