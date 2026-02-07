@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, Modal, TextInput } from "react-native";
+import { View, Text, Pressable, Modal } from "react-native";
 import { useTranslation } from "react-i18next";
 import { fonts, colors } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
@@ -7,6 +7,7 @@ import { useAppTheme } from "@/hooks/useAppTheme";
 import { useNoteStore } from "@/stores/noteStore";
 import { RESTORE_ENDPOINT } from "@/constants/supabase";
 import { Button } from "../elements/Button";
+import { InputField } from "../elements/InputField";
 
 interface RestoreModalProps {
   visible: boolean;
@@ -105,27 +106,17 @@ export function RestoreModal({ visible, onClose }: RestoreModalProps) {
             {t("restorePurchase")}
           </Text>
 
-          <TextInput
+          <InputField
             value={email}
             onChangeText={(text) => {
               setEmail(text);
               setRestoreError(null);
             }}
             placeholder={t("enterEmail")}
-            placeholderTextColor={theme.placeholder}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
             autoFocus
-            underlineColorAndroid="transparent"
-            style={{
-              backgroundColor: theme.card,
-              borderRadius: 10,
-              padding: scale(14),
-              color: theme.foreground,
-              fontSize: fontScale(15),
-              ...fonts.regular,
-            }}
           />
           {restoreError && (
             <Text

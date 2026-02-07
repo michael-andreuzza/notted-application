@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { View, Text, Pressable, ScrollView, TextInput, Linking } from "react-native";
+import { View, Text, Pressable, ScrollView, Linking } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -22,6 +22,7 @@ import { PlusIcon } from "@/components/icons/PlusIcon";
 import { TrashIcon } from "@/components/icons/TrashIcon";
 import { Button } from "@/components/elements/Button";
 import { IconButton } from "@/components/elements/IconButton";
+import { InputField } from "@/components/elements/InputField";
 import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
 import { EmptyState } from "@/components/feedback/EmptyState";
 
@@ -227,7 +228,7 @@ export default function HomeScreen() {
           </Text>
         }
         right={
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: scale(16) }}>
             <IconButton
               onPress={() => {
                 setShowSearch(!showSearch);
@@ -254,43 +255,28 @@ export default function HomeScreen() {
         {/* Search Input */}
         {showSearch && (
           <View style={{ paddingHorizontal: scale(24), marginBottom: scale(24) }}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                borderBottomWidth: 1,
-                borderBottomColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
-              }}
-            >
-              <TextInput
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholder={t("search")}
-                placeholderTextColor={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"}
-                autoFocus
-                underlineColorAndroid="transparent"
-                style={{
-                  flex: 1,
-                  fontSize: fontScale(16),
-                  color: theme.foreground,
-                  paddingVertical: 12,
-                  ...fonts.regular,
-                }}
-              />
-              <IconButton
-                onPress={() => {
-                  setShowSearch(false);
-                  setSearchQuery("");
-                }}
-                size="sm"
-                background={false}
-                icon={(color, size) => (
-                  <CloseIcon color={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"} size={size} />
-                )}
-                iconSize={scale(18)}
-                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              />
-            </View>
+            <InputField
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder={t("search")}
+              autoFocus
+              rightIcon={
+                <IconButton
+                  onPress={() => {
+                    setShowSearch(false);
+                    setSearchQuery("");
+                  }}
+                  size="sm"
+                  variant="default"
+                  background
+                  icon={(color, size) => (
+                    <CloseIcon color={color} size={size} />
+                  )}
+                  iconSize={scale(12)}
+                  style={{ width: scale(26), height: scale(26) }}
+                />
+              }
+            />
           </View>
         )}
 
@@ -346,7 +332,7 @@ export default function HomeScreen() {
                   <Pressable
                     onPress={() => handleNotePress(note.id)}
                     style={{
-                      marginBottom: scale(10),
+                      marginBottom: scale(2),
                       backgroundColor: theme.background,
                       width: "100%",
                       paddingRight: scale(44),
