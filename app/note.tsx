@@ -108,6 +108,7 @@ export default function NoteScreen() {
   const titleInputRef = useRef<TextInput>(null);
   const contentInputRef = useRef<TextInput>(null);
   const itemInputRefs = useRef<Map<number, TextInput>>(new Map());
+  const itemSelectionStarts = useRef<Map<number, number>>(new Map());
   const addItemInputRef = useRef<TextInput>(null);
   const lastShakeTime = useRef(0);
   const lastTitleSubmitTime = useRef(0);
@@ -427,7 +428,7 @@ export default function NoteScreen() {
           {isListMode ? (
             <>
               {/* List mode: per-item rendering */}
-              {listItems.map((item) => (
+              {listItems.map((item, renderIndex) => (
                 <View
                   key={`item-${item.lineIndex}`}
                   style={{
@@ -464,6 +465,7 @@ export default function NoteScreen() {
                         itemInputRefs.current.set(item.lineIndex, ref);
                       } else {
                         itemInputRefs.current.delete(item.lineIndex);
+                        itemSelectionStarts.current.delete(item.lineIndex);
                       }
                     }}
                     value={item.text}
@@ -487,9 +489,57 @@ export default function NoteScreen() {
                       addItemInputRef.current?.focus();
                     }}
                     onKeyPress={({ nativeEvent }) => {
-                      if (nativeEvent.key === "Backspace" && item.text === "") {
+                      if (nativeEvent.key !== "Backspace") return;
+
+                      if (item.text === "") {
                         deleteListItem(item.lineIndex);
+                        return;
                       }
+
+                      const selectionStart =
+                        itemSelectionStarts.current.get(item.lineIndex) ?? item.text.length;
+                      const previousVisibleItem = listItems[renderIndex - 1];
+
+                      // Backspace at start merges into previous item (natural editor behavior)
+                      if (selectionStart === 0 && previousVisibleItem && note) {
+                        const lines = note.content.split("\n");
+                        const previousLineIndex = previousVisibleItem.lineIndex;
+                        const currentLineIndex = item.lineIndex;
+                        const previousLine = lines[previousLineIndex] || "";
+                        const currentLine = lines[currentLineIndex] || "";
+
+                        const previousIsItem =
+                          previousLine.startsWith("- ") || previousLine.startsWith("+ ");
+                        const currentIsItem =
+                          currentLine.startsWith("- ") || currentLine.startsWith("+ ");
+
+                        if (!previousIsItem || !currentIsItem) return;
+
+                        const previousPrefix = previousLine.startsWith("+ ") ? "+ " : "- ";
+                        const previousText = previousLine.substring(2);
+                        const currentText = currentLine.substring(2);
+
+                        lines[previousLineIndex] = `${previousPrefix}${previousText}${currentText}`;
+                        lines.splice(currentLineIndex, 1);
+                        updateContent(note.id, lines.join("\n"));
+
+                        setTimeout(() => {
+                          const prevInput = itemInputRefs.current.get(previousLineIndex);
+                          prevInput?.focus();
+                          (prevInput as any)?.setNativeProps?.({
+                            selection: {
+                              start: previousText.length,
+                              end: previousText.length,
+                            },
+                          });
+                        }, 50);
+                      }
+                    }}
+                    onSelectionChange={({ nativeEvent }) => {
+                      itemSelectionStarts.current.set(
+                        item.lineIndex,
+                        nativeEvent.selection.start
+                      );
                     }}
                     blurOnSubmit={false}
                     returnKeyType="next"
