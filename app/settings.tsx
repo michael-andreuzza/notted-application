@@ -38,7 +38,6 @@ export default function SettingsScreen() {
     setHapticsEnabled,
     shakeToClearEnabled,
     setShakeToClearEnabled,
-    setHasSeenOnboarding,
     resetAllData,
   } = useNoteStore();
   
@@ -168,7 +167,6 @@ export default function SettingsScreen() {
         <Button
           title={t("showOnboarding")}
           onPress={() => {
-            setHasSeenOnboarding(false);
             router.push("/onboarding");
           }}
           variant="muted"

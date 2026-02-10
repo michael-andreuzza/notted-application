@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -19,6 +19,10 @@ export default function OnboardingScreen() {
   const { setHasSeenOnboarding } = useNoteStore();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    setHasSeenOnboarding(true);
+  }, [setHasSeenOnboarding]);
 
   const handleClose = () => {
     setHasSeenOnboarding(true);

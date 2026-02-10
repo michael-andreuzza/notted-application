@@ -16,9 +16,9 @@ export function SectionLabel({ children }: SectionLabelProps) {
       style={{
         fontSize: fontScale(12),
         color: theme.foreground,
-        opacity: 0.4,
+        opacity: 0.7,
         marginBottom: 8,
-        ...fonts.regular,
+        ...fonts.medium,
       }}
     >
       {children}
