@@ -9,10 +9,6 @@ import { useAppTheme } from "@/hooks/useAppTheme";
 import { useNoteStore } from "@/stores/noteStore";
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { TopBar } from "@/components/layout/TopBar";
-import { PlusIcon } from "@/components/icons/PlusIcon";
-import { CheckIcon } from "@/components/icons/CheckIcon";
-import { ArrowDownIcon } from "@/components/icons/ArrowDownIcon";
-import { ShakeIcon } from "@/components/icons/ShakeIcon";
 import { ArrowLeftIcon } from "@/components/icons/ArrowLeftIcon";
 import { Button } from "@/components/elements/Button";
 import { IconButton } from "@/components/elements/IconButton";
@@ -65,23 +61,23 @@ export default function OnboardingScreen() {
 
           <View style={{ gap: 14 }}>
             <TipRow
-              icon={<PlusIcon color={theme.foreground} size={scale(16)} />}
               text={t("tipCreate")}
               theme={theme}
             />
             <TipRow
-              icon={<CheckIcon color={theme.foreground} size={scale(16)} />}
               text={t("tipCheck")}
               theme={theme}
             />
             <TipRow
-              icon={<ArrowDownIcon color={theme.foreground} size={scale(16)} />}
               text={t("tipMove")}
               theme={theme}
             />
             <TipRow
-              icon={<ShakeIcon color={theme.foreground} size={scale(16)} />}
               text={t("tipShake")}
+              theme={theme}
+            />
+            <TipRow
+              text={t("tipSwipeDelete")}
               theme={theme}
             />
           </View>
@@ -100,26 +96,21 @@ export default function OnboardingScreen() {
 }
 
 function TipRow({
-  icon,
   text,
   theme,
 }: {
-  icon: React.ReactNode;
   text: string;
   theme: { foreground: string; background: string };
 }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <View style={{ width: scale(28) }}>
-        {icon}
-      </View>
       <Text
         style={{
-          fontSize: fontScale(14),
+          fontSize: fontScale(16),
           color: theme.foreground,
-          opacity: 0.7,
+          opacity: 0.85,
           flex: 1,
-          ...fonts.regular,
+          ...fonts.medium,
         }}
       >
         {text}

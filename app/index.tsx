@@ -336,6 +336,7 @@ export default function HomeScreen() {
                       backgroundColor: theme.background,
                       width: "100%",
                       paddingRight: scale(44),
+                      paddingVertical: scale(2),
                     }}
                   >
                     <Text

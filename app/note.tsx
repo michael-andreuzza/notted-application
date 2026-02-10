@@ -105,10 +105,13 @@ export default function NoteScreen() {
   const [showSavedMessage, setShowSavedMessage] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const titleInputRef = useRef<TextInput>(null);
   const contentInputRef = useRef<TextInput>(null);
   const itemInputRefs = useRef<Map<number, TextInput>>(new Map());
   const addItemInputRef = useRef<TextInput>(null);
   const lastShakeTime = useRef(0);
+  const lastTitleSubmitTime = useRef(0);
+  const [newListItemText, setNewListItemText] = useState("");
 
   // Shake to clear checked items
   const handleShake = useCallback(() => {
@@ -218,12 +221,12 @@ export default function NoteScreen() {
   const contentLines = note?.content ? note.content.split("\n") : [];
 
   // For list mode: parse into items (each line is "- text" or "+ text")
-  const listItems = contentLines.map((line) => {
+  const listItems = contentLines.map((line, lineIndex) => {
     const isChecked = line.startsWith("+ ");
     const isItem = line.startsWith("- ") || line.startsWith("+ ");
     const text = isItem ? line.substring(2) : line;
-    return { text, isChecked, isItem };
-  });
+    return { text, isChecked, isItem, lineIndex };
+  }).filter((item) => item.text.trim().length > 0 || item.isChecked);
 
   // List mode helpers
   const updateListItem = (index: number, newText: string) => {
@@ -234,16 +237,19 @@ export default function NoteScreen() {
     updateContent(note.id, lines.join("\n"));
   };
 
-  const addListItem = (afterIndex?: number) => {
+  const addListItem = (afterIndex?: number, initialText = "") => {
     if (!note) return;
+    const trimmedText = initialText.trim();
+    if (!trimmedText) {
+      setTimeout(() => addItemInputRef.current?.focus(), 50);
+      return;
+    }
     const lines = note.content ? note.content.split("\n") : [];
     const insertAt = afterIndex !== undefined ? afterIndex + 1 : lines.length;
-    lines.splice(insertAt, 0, "- ");
+    lines.splice(insertAt, 0, `- ${trimmedText}`);
     updateContent(note.id, lines.join("\n"));
-    // Focus the new item after render
-    setTimeout(() => {
-      itemInputRefs.current.get(insertAt)?.focus();
-    }, 50);
+    setNewListItemText("");
+    setTimeout(() => addItemInputRef.current?.focus(), 50);
   };
 
   const deleteListItem = (index: number) => {
@@ -270,6 +276,32 @@ export default function NoteScreen() {
   // Determine note type
   const noteType = note?.type || "text";
   const isListMode = noteType === "list";
+
+  // Auto-focus title for newly created empty notes
+  useEffect(() => {
+    if (!note || !isNoteEmpty(note)) return;
+    const timer = setTimeout(() => {
+      titleInputRef.current?.focus();
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [note?.id]);
+
+  const handleTitleSubmit = () => {
+    const now = Date.now();
+    if (now - lastTitleSubmitTime.current < 150) return;
+    lastTitleSubmitTime.current = now;
+
+    if (isListMode) {
+      if (listItems.length > 0) {
+        setTimeout(() => itemInputRefs.current.get(listItems[0].lineIndex)?.focus(), 0);
+      } else {
+        setTimeout(() => addItemInputRef.current?.focus(), 0);
+      }
+      return;
+    }
+
+    setTimeout(() => contentInputRef.current?.focus(), 0);
+  };
 
   if (!note) {
     return (
@@ -360,9 +392,18 @@ export default function NoteScreen() {
         {/* Title Input */}
         <View style={{ paddingHorizontal: scale(24), marginBottom: scale(16) }}>
           <TextInput
+            ref={titleInputRef}
             value={note.title}
             onChangeText={(text) => updateNoteTitle(note.id, text)}
-            placeholder={t("noteTitle")}
+            placeholder={isListMode ? "List title..." : t("noteTitle")}
+            onSubmitEditing={handleTitleSubmit}
+            onKeyPress={({ nativeEvent }) => {
+              if (nativeEvent.key === "Enter") {
+                handleTitleSubmit();
+              }
+            }}
+            blurOnSubmit={false}
+            returnKeyType="next"
             placeholderTextColor={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"}
             underlineColorAndroid="transparent"
             style={{
@@ -386,9 +427,9 @@ export default function NoteScreen() {
           {isListMode ? (
             <>
               {/* List mode: per-item rendering */}
-              {listItems.map((item, index) => (
+              {listItems.map((item) => (
                 <View
-                  key={`item-${index}`}
+                  key={`item-${item.lineIndex}`}
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
@@ -397,7 +438,7 @@ export default function NoteScreen() {
                 >
                   {/* Checkbox */}
                   <Pressable
-                    onPress={() => handleToggleLine(index)}
+                    onPress={() => handleToggleLine(item.lineIndex)}
                     hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                     style={{
                       width: CHECKBOX_SIZE,
@@ -420,9 +461,9 @@ export default function NoteScreen() {
                   <TextInput
                     ref={(ref) => {
                       if (ref) {
-                        itemInputRefs.current.set(index, ref);
+                        itemInputRefs.current.set(item.lineIndex, ref);
                       } else {
-                        itemInputRefs.current.delete(index);
+                        itemInputRefs.current.delete(item.lineIndex);
                       }
                     }}
                     value={item.text}
@@ -430,27 +471,24 @@ export default function NoteScreen() {
                       // Detect newline (Enter press) - split into current + new item
                       if (text.includes("\n")) {
                         const parts = text.split("\n");
-                        updateListItem(index, parts[0]);
-                        // Insert new item after this one with remaining text
-                        const lines = note.content.split("\n");
-                        const prefix = lines[index]?.startsWith("+ ") ? "+ " : "- ";
-                        lines[index] = prefix + parts[0];
-                        lines.splice(index + 1, 0, "- " + (parts[1] || ""));
-                        updateContent(note.id, lines.join("\n"));
-                        setTimeout(() => {
-                          itemInputRefs.current.get(index + 1)?.focus();
-                        }, 50);
+                        updateListItem(item.lineIndex, parts[0]);
+                        const remainingText = parts.slice(1).join(" ").trim();
+                        if (remainingText.length > 0) {
+                          addListItem(item.lineIndex, remainingText);
+                        } else {
+                          setTimeout(() => addItemInputRef.current?.focus(), 50);
+                        }
                         return;
                       }
-                      updateListItem(index, text);
+                      updateListItem(item.lineIndex, text);
                     }}
                     onSubmitEditing={() => {
-                      // Enter pressed - add new item below and focus it
-                      addListItem(index);
+                      // Enter pressed - move to add item input
+                      addItemInputRef.current?.focus();
                     }}
                     onKeyPress={({ nativeEvent }) => {
                       if (nativeEvent.key === "Backspace" && item.text === "") {
-                        deleteListItem(index);
+                        deleteListItem(item.lineIndex);
                       }
                     }}
                     blurOnSubmit={false}
@@ -474,13 +512,11 @@ export default function NoteScreen() {
               ))}
 
               {/* Add new item input */}
-              <Pressable
-                onPress={() => addListItem()}
+              <View
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
                   paddingVertical: scale(8),
-                  opacity: 0.5,
                 }}
               >
                 <View
@@ -494,16 +530,29 @@ export default function NoteScreen() {
                     marginRight: scale(12),
                   }}
                 />
-                <Text
+                <TextInput
+                  ref={addItemInputRef}
+                  value={newListItemText}
+                  onChangeText={setNewListItemText}
+                  onSubmitEditing={() => {
+                    addListItem(undefined, newListItemText);
+                  }}
+                  blurOnSubmit={false}
+                  returnKeyType="next"
+                  placeholder={t("addItem")}
+                  placeholderTextColor={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)"}
+                  underlineColorAndroid="transparent"
                   style={{
+                    flex: 1,
                     fontSize: fontScale(18),
                     color: theme.foreground,
+                    paddingVertical: scale(8),
+                    paddingHorizontal: 0,
                     ...fonts.regular,
                   }}
-                >
-                  {t("addItem")}
-                </Text>
-              </Pressable>
+                  autoCapitalize="sentences"
+                />
+              </View>
             </>
           ) : (
             <>

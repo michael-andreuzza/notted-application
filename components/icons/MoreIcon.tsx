@@ -1,5 +1,5 @@
 import React from "react";
-import Svg, { Circle } from "react-native-svg";
+import { DotsThreeVertical as DotsThreeVerticalPhosphor } from "phosphor-react-native";
 
 interface MoreIconProps {
   color: string;
@@ -7,11 +7,5 @@ interface MoreIconProps {
 }
 
 export function MoreIcon({ color, size = 24 }: MoreIconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Circle cx="12" cy="5" r="1.5" fill={color} />
-      <Circle cx="12" cy="12" r="1.5" fill={color} />
-      <Circle cx="12" cy="19" r="1.5" fill={color} />
-    </Svg>
-  );
+  return <DotsThreeVerticalPhosphor color={color} size={size} weight="regular" />;
 }
