@@ -238,16 +238,43 @@ export default function NoteScreen() {
     updateContent(note.id, lines.join("\n"));
   };
 
+  const parseChecklistInput = (input: string) => {
+    return input
+      .split(/\r?\n/)
+      .map((rawLine) => {
+        let line = rawLine.trim();
+        if (!line) return null;
+
+        let isChecked = false;
+        if (line.startsWith("+ ")) {
+          isChecked = true;
+          line = line.substring(2).trim();
+        } else if (line.startsWith("- ")) {
+          line = line.substring(2).trim();
+        } else {
+          // Normalize common copied list formats (e.g., bullets or numbered lines)
+          line = line.replace(/^([•*]\s+|\d+[.)]\s+)/, "").trim();
+        }
+
+        if (!line) return null;
+        return { text: line, isChecked };
+      })
+      .filter(Boolean) as Array<{ text: string; isChecked: boolean }>;
+  };
+
   const addListItem = (afterIndex?: number, initialText = "") => {
     if (!note) return;
-    const trimmedText = initialText.trim();
-    if (!trimmedText) {
+    const parsed = parseChecklistInput(initialText);
+    if (parsed.length === 0) {
       setTimeout(() => addItemInputRef.current?.focus(), 50);
       return;
     }
     const lines = note.content ? note.content.split("\n") : [];
     const insertAt = afterIndex !== undefined ? afterIndex + 1 : lines.length;
-    lines.splice(insertAt, 0, `- ${trimmedText}`);
+    const newLines = parsed.map(
+      (item) => `${item.isChecked ? "+ " : "- "}${item.text}`
+    );
+    lines.splice(insertAt, 0, ...newLines);
     updateContent(note.id, lines.join("\n"));
     setNewListItemText("");
     setTimeout(() => addItemInputRef.current?.focus(), 50);
@@ -472,11 +499,32 @@ export default function NoteScreen() {
                     onChangeText={(text) => {
                       // Detect newline (Enter press) - split into current + new item
                       if (text.includes("\n")) {
-                        const parts = text.split("\n");
-                        updateListItem(item.lineIndex, parts[0]);
-                        const remainingText = parts.slice(1).join(" ").trim();
-                        if (remainingText.length > 0) {
-                          addListItem(item.lineIndex, remainingText);
+                        const parsed = parseChecklistInput(text);
+                        if (!note || parsed.length === 0) {
+                          updateListItem(item.lineIndex, "");
+                          setTimeout(() => addItemInputRef.current?.focus(), 50);
+                          return;
+                        }
+
+                        const lines = note.content.split("\n");
+                        const currentPrefix = lines[item.lineIndex]?.startsWith("+ ")
+                          ? "+ "
+                          : "- ";
+                        lines[item.lineIndex] = `${currentPrefix}${parsed[0].text}`;
+
+                        const additionalLines = parsed
+                          .slice(1)
+                          .map((entry) => `${entry.isChecked ? "+ " : "- "}${entry.text}`);
+
+                        if (additionalLines.length > 0) {
+                          lines.splice(item.lineIndex + 1, 0, ...additionalLines);
+                        }
+
+                        updateContent(note.id, lines.join("\n"));
+                        if (additionalLines.length > 0) {
+                          setTimeout(() => {
+                            itemInputRefs.current.get(item.lineIndex + 1)?.focus();
+                          }, 50);
                         } else {
                           setTimeout(() => addItemInputRef.current?.focus(), 50);
                         }
@@ -583,7 +631,13 @@ export default function NoteScreen() {
                 <TextInput
                   ref={addItemInputRef}
                   value={newListItemText}
-                  onChangeText={setNewListItemText}
+                  onChangeText={(text) => {
+                    if (text.includes("\n")) {
+                      addListItem(undefined, text);
+                      return;
+                    }
+                    setNewListItemText(text);
+                  }}
                   onSubmitEditing={() => {
                     addListItem(undefined, newListItemText);
                   }}
