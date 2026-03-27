@@ -4,7 +4,6 @@ import { StatusBar } from "expo-status-bar";
 import { useColorScheme, View, Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import * as Linking from "expo-linking";
 import * as SplashScreen from "expo-splash-screen";
 import * as NavigationBar from "expo-navigation-bar";
 import {
@@ -17,6 +16,7 @@ import {
 import { useNoteStore } from "@/stores/noteStore";
 import { initI18n } from "@/i18n";
 import { colors } from "@/constants/theme";
+import { initPlayBilling, teardownPlayBilling } from "@/services/playBilling";
 
 // Keep splash screen visible while fonts load (only on native)
 if (Platform.OS !== "web") {
@@ -25,7 +25,7 @@ if (Platform.OS !== "web") {
 
 export default function RootLayout() {
   const systemColorScheme = useColorScheme();
-  const { themeMode, language, setPremium } = useNoteStore();
+  const { themeMode, language } = useNoteStore();
   const [i18nReady, setI18nReady] = useState(false);
 
   const [fontsLoaded] = useFonts({
@@ -47,29 +47,17 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
 
-  // Listen for deep link to unlock premium after purchase
   useEffect(() => {
-    const handleDeepLink = (event: { url: string }) => {
-      const url = event.url;
-      if (url.includes("purchase-success")) {
-        setPremium(true);
-      }
-    };
+    if (Platform.OS !== "android") {
+      return;
+    }
 
-    // Check if app was opened via deep link
-    Linking.getInitialURL().then((url) => {
-      if (url && url.includes("purchase-success")) {
-        setPremium(true);
-      }
-    });
-
-    // Listen for deep links while app is open
-    const subscription = Linking.addEventListener("url", handleDeepLink);
+    void initPlayBilling();
 
     return () => {
-      subscription.remove();
+      void teardownPlayBilling();
     };
-  }, [setPremium]);
+  }, []);
 
   const isDark = themeMode === "system"
     ? systemColorScheme === "dark"

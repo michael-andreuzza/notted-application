@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, Modal } from "react-native";
+import { View, Text, Pressable, Modal, Platform } from "react-native";
 import { useTranslation } from "react-i18next";
 import { fonts, colors } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useNoteStore } from "@/stores/noteStore";
 import { RESTORE_ENDPOINT } from "@/constants/supabase";
+import { restorePremiumFromPlay } from "@/services/playBilling";
 import { Button } from "../elements/Button";
 import { InputField } from "../elements/InputField";
 
@@ -22,8 +23,30 @@ export function RestoreModal({ visible, onClose }: RestoreModalProps) {
   const [email, setEmail] = useState(purchaseEmail || "");
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState<string | null>(null);
+  const isAndroid = Platform.OS === "android";
 
   const handleRestore = async () => {
+    if (isAndroid) {
+      setIsRestoring(true);
+      setRestoreError(null);
+
+      try {
+        const restored = await restorePremiumFromPlay();
+        if (restored) {
+          setPremium(true);
+          handleClose();
+        } else {
+          setRestoreError("No Google Play purchase found for this account.");
+        }
+      } catch (error) {
+        console.error("Restore error:", error);
+        setRestoreError("Failed to restore. Please try again.");
+      } finally {
+        setIsRestoring(false);
+      }
+      return;
+    }
+
     if (!email.trim()) {
       setRestoreError("Please enter your email");
       return;
@@ -106,18 +129,32 @@ export function RestoreModal({ visible, onClose }: RestoreModalProps) {
             {t("restorePurchase")}
           </Text>
 
-          <InputField
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              setRestoreError(null);
-            }}
-            placeholder={t("enterEmail")}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoFocus
-          />
+          {isAndroid ? (
+            <Text
+              style={{
+                color: theme.foreground,
+                opacity: 0.7,
+                fontSize: fontScale(14),
+                textAlign: "center",
+                ...fonts.regular,
+              }}
+            >
+              Restores your premium purchase from the Google Play account on this device.
+            </Text>
+          ) : (
+            <InputField
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                setRestoreError(null);
+              }}
+              placeholder={t("enterEmail")}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoFocus
+            />
+          )}
           {restoreError && (
             <Text
               style={{

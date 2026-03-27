@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { useNoteStore } from "@/stores/noteStore";
 import { useAppTheme } from "@/hooks/useAppTheme";
@@ -11,8 +11,10 @@ export default function PurchaseSuccessScreen() {
   const { theme } = useAppTheme();
 
   useEffect(() => {
-    // Unlock premium
-    setPremium(true);
+    // Keep legacy callback for non-Android only.
+    if (Platform.OS !== "android") {
+      setPremium(true);
+    }
 
     // Redirect to home after a brief moment
     const timeout = setTimeout(() => {

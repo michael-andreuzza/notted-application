@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { View, Text, Pressable, ScrollView, Linking } from "react-native";
+import { View, Text, Pressable, ScrollView, Platform } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -25,8 +25,7 @@ import { IconButton } from "@/components/elements/IconButton";
 import { InputField } from "@/components/elements/InputField";
 import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
 import { EmptyState } from "@/components/feedback/EmptyState";
-
-const POLAR_CHECKOUT_URL = "https://buy.polar.sh/polar_cl_qCd3hFE0efbUAbSDO16d4aCtF8BJzlGCRQf8u40mrSz";
+import { getPremiumProduct, startPremiumPurchase } from "@/services/playBilling";
 
 // Date categorization helper
 type DateGroup = "today" | "yesterday" | "this week" | "last week" | "this month" | "older";
@@ -81,9 +80,16 @@ export default function HomeScreen() {
   const { impact, notification, ImpactStyle, NotificationType } = useHaptics();
   const [showPaywall, setShowPaywall] = useState(false);
   const [showRestore, setShowRestore] = useState(false);
-  
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [premiumPriceLabel, setPremiumPriceLabel] = useState("$4.99");
+
   const handleDirectPurchase = async () => {
-    await Linking.openURL(POLAR_CHECKOUT_URL);
+    setIsPurchasing(true);
+    try {
+      await startPremiumPurchase();
+    } finally {
+      setIsPurchasing(false);
+    }
   };
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
@@ -95,6 +101,31 @@ export default function HomeScreen() {
       router.replace("/onboarding");
     }
   }, [hasSeenOnboarding, router]);
+
+  useEffect(() => {
+    if (Platform.OS !== "android") {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadProduct = async () => {
+      try {
+        const product = await getPremiumProduct();
+        if (!cancelled && product?.localizedPrice) {
+          setPremiumPriceLabel(product.localizedPrice);
+        }
+      } catch (error) {
+        console.warn("Failed loading Play product", error);
+      }
+    };
+
+    void loadProduct();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
   const [openSwipeId, setOpenSwipeId] = useState<string | null>(null);
@@ -466,11 +497,12 @@ export default function HomeScreen() {
 
               {/* CTA Button - goes directly to payment */}
               <Button
-                title={`${t("unlockPremium")} — $4.99`}
+                title={`${t("unlockPremium")} — ${premiumPriceLabel}`}
                 onPress={handleDirectPurchase}
                 variant="default"
                 fullWidth
                 style={{ marginTop: 8 }}
+                loading={isPurchasing}
               />
 
               {/* Restore purchase link */}

@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, Pressable, Modal, Linking } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, Pressable, Modal, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { fonts } from "@/constants/theme";
@@ -8,8 +8,7 @@ import { useAppTheme } from "@/hooks/useAppTheme";
 import { CloseIcon } from "../icons/CloseIcon";
 import { Button } from "../elements/Button";
 import { IconButton } from "../elements/IconButton";
-
-const POLAR_CHECKOUT_URL = "https://buy.polar.sh/polar_cl_qCd3hFE0efbUAbSDO16d4aCtF8BJzlGCRQf8u40mrSz";
+import { getPremiumProduct, startPremiumPurchase } from "@/services/playBilling";
 
 interface PaywallModalProps {
   visible: boolean;
@@ -21,11 +20,43 @@ export function PaywallModal({ visible, onClose, onRestore }: PaywallModalProps)
   const { theme } = useAppTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [premiumPriceLabel, setPremiumPriceLabel] = useState("$4.99");
 
   const handlePurchase = async () => {
-    await Linking.openURL(POLAR_CHECKOUT_URL);
+    setIsPurchasing(true);
+    try {
+      await startPremiumPurchase();
+    } finally {
+      setIsPurchasing(false);
+    }
     onClose();
   };
+
+  useEffect(() => {
+    if (!visible || Platform.OS !== "android") {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadProduct = async () => {
+      try {
+        const product = await getPremiumProduct();
+        if (!cancelled && product?.localizedPrice) {
+          setPremiumPriceLabel(product.localizedPrice);
+        }
+      } catch (error) {
+        console.warn("Failed loading Play product", error);
+      }
+    };
+
+    void loadProduct();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [visible]);
 
   return (
     <Modal
@@ -143,7 +174,7 @@ export function PaywallModal({ visible, onClose, onRestore }: PaywallModalProps)
                   ...fonts.regular,
                 }}
               >
-                $4.99
+                {premiumPriceLabel}
               </Text>
             </View>
           </View>
@@ -156,6 +187,7 @@ export function PaywallModal({ visible, onClose, onRestore }: PaywallModalProps)
             size="lg"
             fullWidth
             style={{ marginBottom: 8 }}
+            loading={isPurchasing}
           />
 
           {/* Restore purchase button */}
