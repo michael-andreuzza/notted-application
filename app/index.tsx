@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { View, Text, Pressable, ScrollView, Platform } from "react-native";
+import { View, Text, Pressable, ScrollView } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -103,10 +103,6 @@ export default function HomeScreen() {
   }, [hasSeenOnboarding, router]);
 
   useEffect(() => {
-    if (Platform.OS !== "android") {
-      return;
-    }
-
     let cancelled = false;
 
     const loadProduct = async () => {

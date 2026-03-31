@@ -16,6 +16,9 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.notted.app",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "splash": {
         "image": "./assets/splash-icon.png",
         "resizeMode": "contain",
@@ -25,7 +28,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#121212"
         }
-      }
+      },
+      "buildNumber": "4"
     },
     "android": {
       "adaptiveIcon": {
@@ -46,7 +50,7 @@
           "backgroundColor": "#121212"
         }
       },
-      "versionCode": 18
+      "versionCode": 19
     },
     "web": {
       "bundler": "metro",

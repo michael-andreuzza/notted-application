@@ -11,7 +11,11 @@ import {
   type Purchase,
 } from "react-native-iap";
 import { Platform } from "react-native";
-import { ANDROID_PREMIUM_PRODUCT_ID, PREMIUM_PRODUCT_IDS } from "@/constants/billing";
+import {
+  ANDROID_PREMIUM_PRODUCT_ID,
+  IOS_PREMIUM_PRODUCT_ID,
+  isPremiumProductId,
+} from "@/constants/billing";
 import { useNoteStore } from "@/stores/noteStore";
 
 let initialized = false;
@@ -20,12 +24,12 @@ let purchaseUpdatedSub: { remove: () => void } | null = null;
 let purchaseErrorSub: { remove: () => void } | null = null;
 
 const isPremiumPurchase = (purchase: Purchase): boolean => {
-  if (purchase.productId === ANDROID_PREMIUM_PRODUCT_ID) {
+  if (isPremiumProductId(purchase.productId)) {
     return true;
   }
 
   return Array.isArray(purchase.productIds)
-    ? purchase.productIds.includes(ANDROID_PREMIUM_PRODUCT_ID)
+    ? purchase.productIds.some((productId) => isPremiumProductId(productId))
     : false;
 };
 
@@ -45,7 +49,7 @@ const completePremiumPurchase = async (purchase: Purchase): Promise<void> => {
 };
 
 const ensureConnection = async (): Promise<boolean> => {
-  if (Platform.OS !== "android") {
+  if (Platform.OS !== "android" && Platform.OS !== "ios") {
     return false;
   }
 
@@ -67,7 +71,7 @@ const ensureConnection = async (): Promise<boolean> => {
 };
 
 export const initPlayBilling = async (): Promise<void> => {
-  if (Platform.OS !== "android") {
+  if (Platform.OS !== "android" && Platform.OS !== "ios") {
     return;
   }
 
@@ -97,7 +101,7 @@ export const teardownPlayBilling = async (): Promise<void> => {
   initialized = false;
   connecting = null;
 
-  if (Platform.OS === "android") {
+  if (Platform.OS === "android" || Platform.OS === "ios") {
     try {
       await endConnection();
     } catch (error) {
@@ -107,7 +111,14 @@ export const teardownPlayBilling = async (): Promise<void> => {
 };
 
 export const getPremiumProduct = async (): Promise<Product | null> => {
-  if (Platform.OS !== "android") {
+  const productId =
+    Platform.OS === "android"
+      ? ANDROID_PREMIUM_PRODUCT_ID
+      : Platform.OS === "ios"
+        ? IOS_PREMIUM_PRODUCT_ID
+        : null;
+
+  if (!productId) {
     return null;
   }
 
@@ -116,12 +127,12 @@ export const getPremiumProduct = async (): Promise<Product | null> => {
     return null;
   }
 
-  const products = await fetchProducts({ skus: PREMIUM_PRODUCT_IDS, type: "in-app" });
+  const products = await fetchProducts({ skus: [productId], type: "in-app" });
   return products[0] ?? null;
 };
 
 export const startPremiumPurchase = async (): Promise<boolean> => {
-  if (Platform.OS !== "android") {
+  if (Platform.OS !== "android" && Platform.OS !== "ios") {
     return false;
   }
 
@@ -130,10 +141,13 @@ export const startPremiumPurchase = async (): Promise<boolean> => {
     return false;
   }
 
+  const request =
+    Platform.OS === "android"
+      ? { google: { skus: [ANDROID_PREMIUM_PRODUCT_ID] } }
+      : { apple: { sku: IOS_PREMIUM_PRODUCT_ID } };
+
   const result = await requestPurchase({
-    request: {
-      google: { skus: [ANDROID_PREMIUM_PRODUCT_ID] },
-    },
+    request,
     type: "in-app",
   });
 
@@ -145,8 +159,8 @@ export const startPremiumPurchase = async (): Promise<boolean> => {
   return true;
 };
 
-export const restorePremiumFromPlay = async (): Promise<boolean> => {
-  if (Platform.OS !== "android") {
+export const restorePremiumFromStore = async (): Promise<boolean> => {
+  if (Platform.OS !== "android" && Platform.OS !== "ios") {
     return false;
   }
 
@@ -165,3 +179,6 @@ export const restorePremiumFromPlay = async (): Promise<boolean> => {
   await Promise.all(premiumPurchases.map((purchase) => completePremiumPurchase(purchase)));
   return true;
 };
+
+// Backwards compatibility for existing imports while migrating call sites.
+export const restorePremiumFromPlay = restorePremiumFromStore;

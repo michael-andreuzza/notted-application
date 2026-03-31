@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, Modal, Platform } from "react-native";
+import { View, Text, Pressable, Modal } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { fonts } from "@/constants/theme";
@@ -34,7 +34,7 @@ export function PaywallModal({ visible, onClose, onRestore }: PaywallModalProps)
   };
 
   useEffect(() => {
-    if (!visible || Platform.OS !== "android") {
+    if (!visible) {
       return;
     }
 

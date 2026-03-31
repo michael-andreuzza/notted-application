@@ -11,12 +11,12 @@ export default function PurchaseSuccessScreen() {
   const { theme } = useAppTheme();
 
   useEffect(() => {
-    // Keep legacy callback for non-Android only.
-    if (Platform.OS !== "android") {
+    // Web-only legacy unlock (no App Store / Play billing on web in this app).
+    // iOS/Android: never grant premium from a URL/deep link — only StoreKit / Play Billing + Restore.
+    if (Platform.OS === "web") {
       setPremium(true);
     }
 
-    // Redirect to home after a brief moment
     const timeout = setTimeout(() => {
       router.replace("/");
     }, 1500);
@@ -54,7 +54,9 @@ export default function PurchaseSuccessScreen() {
           ...fonts.regular,
         }}
       >
-        Lifetime access unlocked. Redirecting...
+        {Platform.OS === "web"
+          ? "Lifetime access unlocked. Redirecting..."
+          : "Redirecting… Premium must be unlocked via in-app purchase or Restore Purchases."}
       </Text>
       <ActivityIndicator color={theme.foreground} />
     </View>

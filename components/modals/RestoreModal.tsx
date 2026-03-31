@@ -5,10 +5,8 @@ import { fonts, colors } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useNoteStore } from "@/stores/noteStore";
-import { RESTORE_ENDPOINT } from "@/constants/supabase";
-import { restorePremiumFromPlay } from "@/services/playBilling";
+import { restorePremiumFromStore } from "@/services/playBilling";
 import { Button } from "../elements/Button";
-import { InputField } from "../elements/InputField";
 
 interface RestoreModalProps {
   visible: boolean;
@@ -18,43 +16,16 @@ interface RestoreModalProps {
 export function RestoreModal({ visible, onClose }: RestoreModalProps) {
   const { theme } = useAppTheme();
   const { t } = useTranslation();
-  const { setPremium, purchaseEmail } = useNoteStore();
+  const { setPremium } = useNoteStore();
 
-  const [email, setEmail] = useState(purchaseEmail || "");
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState<string | null>(null);
   const isAndroid = Platform.OS === "android";
+  const isIOS = Platform.OS === "ios";
 
   const handleRestore = async () => {
-    if (isAndroid) {
-      setIsRestoring(true);
-      setRestoreError(null);
-
-      try {
-        const restored = await restorePremiumFromPlay();
-        if (restored) {
-          setPremium(true);
-          handleClose();
-        } else {
-          setRestoreError("No Google Play purchase found for this account.");
-        }
-      } catch (error) {
-        console.error("Restore error:", error);
-        setRestoreError("Failed to restore. Please try again.");
-      } finally {
-        setIsRestoring(false);
-      }
-      return;
-    }
-
-    if (!email.trim()) {
-      setRestoreError("Please enter your email");
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      setRestoreError("Please enter a valid email");
+    if (!isAndroid && !isIOS) {
+      setRestoreError("Restore is only supported on Android and iOS.");
       return;
     }
 
@@ -62,14 +33,16 @@ export function RestoreModal({ visible, onClose }: RestoreModalProps) {
     setRestoreError(null);
 
     try {
-      const response = await fetch(`${RESTORE_ENDPOINT}?email=${encodeURIComponent(email.trim())}`);
-      const data = await response.json();
-
-      if (data.isPremium) {
-        setPremium(true, email.trim().toLowerCase());
+      const restored = await restorePremiumFromStore();
+      if (restored) {
+        setPremium(true);
         handleClose();
       } else {
-        setRestoreError("No purchase found for this email");
+        setRestoreError(
+          isIOS
+            ? "No App Store purchase found for this account."
+            : "No Google Play purchase found for this account.",
+        );
       }
     } catch (error) {
       console.error("Restore error:", error);
@@ -129,32 +102,19 @@ export function RestoreModal({ visible, onClose }: RestoreModalProps) {
             {t("restorePurchase")}
           </Text>
 
-          {isAndroid ? (
-            <Text
-              style={{
-                color: theme.foreground,
-                opacity: 0.7,
-                fontSize: fontScale(14),
-                textAlign: "center",
-                ...fonts.regular,
-              }}
-            >
-              Restores your premium purchase from the Google Play account on this device.
-            </Text>
-          ) : (
-            <InputField
-              value={email}
-              onChangeText={(text) => {
-                setEmail(text);
-                setRestoreError(null);
-              }}
-              placeholder={t("enterEmail")}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoFocus
-            />
-          )}
+          <Text
+            style={{
+              color: theme.foreground,
+              opacity: 0.7,
+              fontSize: fontScale(14),
+              textAlign: "center",
+              ...fonts.regular,
+            }}
+          >
+            {isIOS
+              ? "Restores your premium purchase from the App Store account on this device."
+              : "Restores your premium purchase from the Google Play account on this device."}
+          </Text>
           {restoreError && (
             <Text
               style={{
