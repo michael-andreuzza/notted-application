@@ -136,7 +136,8 @@ export const getPremiumProduct = async (): Promise<Product | null> => {
   }
 
   const products = await fetchProducts({ skus: [productId], type: "in-app" });
-  return products[0] ?? null;
+  const product = (products ?? []).find((item) => item.type === "in-app");
+  return (product as Product | undefined) ?? null;
 };
 
 export const startPremiumPurchase = async (): Promise<PurchaseOutcome> => {
