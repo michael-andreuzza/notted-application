@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, Modal } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { fonts } from "@/constants/theme";
+import { fonts, colors } from "@/constants/theme";
 import { scale, fontScale } from "@/constants/responsive";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { CloseIcon } from "../icons/CloseIcon";
@@ -22,15 +22,35 @@ export function PaywallModal({ visible, onClose, onRestore }: PaywallModalProps)
   const insets = useSafeAreaInsets();
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [premiumPriceLabel, setPremiumPriceLabel] = useState("$4.99");
+  const [feedback, setFeedback] = useState<{ text: string; isError: boolean } | null>(null);
 
   const handlePurchase = async () => {
+    if (isPurchasing) {
+      return;
+    }
     setIsPurchasing(true);
+    setFeedback(null);
     try {
-      await startPremiumPurchase();
+      const outcome = await startPremiumPurchase();
+      if (outcome === "purchased") {
+        onClose();
+      } else if (outcome === "pending") {
+        setFeedback({
+          text: "Your purchase is being processed. It will unlock automatically once confirmed.",
+          isError: false,
+        });
+      }
+    } catch (error) {
+      setFeedback({
+        text:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong with the purchase. Please try again.",
+        isError: true,
+      });
     } finally {
       setIsPurchasing(false);
     }
-    onClose();
   };
 
   useEffect(() => {
@@ -38,13 +58,15 @@ export function PaywallModal({ visible, onClose, onRestore }: PaywallModalProps)
       return;
     }
 
+    setFeedback(null);
+
     let cancelled = false;
 
     const loadProduct = async () => {
       try {
         const product = await getPremiumProduct();
-        if (!cancelled && product?.localizedPrice) {
-          setPremiumPriceLabel(product.localizedPrice);
+        if (!cancelled && product?.displayPrice) {
+          setPremiumPriceLabel(product.displayPrice);
         }
       } catch (error) {
         console.warn("Failed loading Play product", error);
@@ -189,6 +211,22 @@ export function PaywallModal({ visible, onClose, onRestore }: PaywallModalProps)
             style={{ marginBottom: 8 }}
             loading={isPurchasing}
           />
+
+          {/* Inline purchase feedback */}
+          {feedback && (
+            <Text
+              style={{
+                color: feedback.isError ? colors.danger : theme.foreground,
+                opacity: feedback.isError ? 1 : 0.7,
+                fontSize: fontScale(13),
+                textAlign: "center",
+                marginBottom: 8,
+                ...fonts.regular,
+              }}
+            >
+              {feedback.text}
+            </Text>
+          )}
 
           {/* Restore purchase button */}
           {onRestore && (

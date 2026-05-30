@@ -14,7 +14,7 @@
       "backgroundColor": "#F2F2F2"
     },
     "ios": {
-      "supportsTablet": false,
+      "supportsTablet": true,
       "bundleIdentifier": "com.notted.app",
       "config": {
         "usesNonExemptEncryption": false
@@ -29,7 +29,7 @@
           "backgroundColor": "#121212"
         }
       },
-      "buildNumber": "4"
+      "buildNumber": "5"
     },
     "android": {
       "adaptiveIcon": {

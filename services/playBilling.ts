@@ -1,5 +1,6 @@
 import {
   endConnection,
+  ErrorCode,
   fetchProducts,
   finishTransaction,
   getAvailablePurchases,
@@ -23,13 +24,20 @@ let connecting: Promise<boolean> | null = null;
 let purchaseUpdatedSub: { remove: () => void } | null = null;
 let purchaseErrorSub: { remove: () => void } | null = null;
 
+export type PurchaseOutcome = "purchased" | "cancelled" | "pending";
+
+const isUserCancelled = (error: unknown): boolean => {
+  const code = (error as { code?: unknown } | null | undefined)?.code;
+  return code === ErrorCode.UserCancelled || code === "E_USER_CANCELLED";
+};
+
 const isPremiumPurchase = (purchase: Purchase): boolean => {
   if (isPremiumProductId(purchase.productId)) {
     return true;
   }
 
-  return Array.isArray(purchase.productIds)
-    ? purchase.productIds.some((productId) => isPremiumProductId(productId))
+  return Array.isArray(purchase.ids)
+    ? purchase.ids.some((productId) => isPremiumProductId(productId))
     : false;
 };
 
@@ -131,14 +139,24 @@ export const getPremiumProduct = async (): Promise<Product | null> => {
   return products[0] ?? null;
 };
 
-export const startPremiumPurchase = async (): Promise<boolean> => {
+export const startPremiumPurchase = async (): Promise<PurchaseOutcome> => {
   if (Platform.OS !== "android" && Platform.OS !== "ios") {
-    return false;
+    throw new Error("In-app purchases are only available on Android and iOS.");
   }
 
   const connected = await ensureConnection();
   if (!connected) {
-    return false;
+    throw new Error("Could not connect to the store. Please try again.");
+  }
+
+  // Confirm the product is actually available before opening the native
+  // purchase sheet. If it is missing (store config / agreement issues) we
+  // surface a clear error instead of the purchase silently doing nothing.
+  const product = await getPremiumProduct();
+  if (!product) {
+    throw new Error(
+      "Premium is not available from the store right now. Please try again later.",
+    );
   }
 
   const request =
@@ -146,17 +164,28 @@ export const startPremiumPurchase = async (): Promise<boolean> => {
       ? { google: { skus: [ANDROID_PREMIUM_PRODUCT_ID] } }
       : { apple: { sku: IOS_PREMIUM_PRODUCT_ID } };
 
-  const result = await requestPurchase({
-    request,
-    type: "in-app",
-  });
+  try {
+    const result = await requestPurchase({
+      request,
+      type: "in-app",
+    });
 
-  if (result) {
-    const purchases = Array.isArray(result) ? result : [result];
-    await Promise.all(purchases.map((purchase) => completePremiumPurchase(purchase)));
+    if (result) {
+      const purchases = Array.isArray(result) ? result : [result];
+      await Promise.all(
+        purchases.map((purchase) => completePremiumPurchase(purchase)),
+      );
+    }
+  } catch (error) {
+    if (isUserCancelled(error)) {
+      return "cancelled";
+    }
+    throw error;
   }
 
-  return true;
+  // On iOS the resolved purchase may arrive via purchaseUpdatedListener rather
+  // than the requestPurchase result, so trust the unlocked state.
+  return useNoteStore.getState().isPremium ? "purchased" : "pending";
 };
 
 export const restorePremiumFromStore = async (): Promise<boolean> => {

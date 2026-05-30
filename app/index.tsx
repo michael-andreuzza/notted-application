@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable, ScrollView, Alert } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -84,9 +84,25 @@ export default function HomeScreen() {
   const [premiumPriceLabel, setPremiumPriceLabel] = useState("$4.99");
 
   const handleDirectPurchase = async () => {
+    if (isPurchasing) {
+      return;
+    }
     setIsPurchasing(true);
     try {
-      await startPremiumPurchase();
+      const outcome = await startPremiumPurchase();
+      if (outcome === "pending") {
+        Alert.alert(
+          t("purchaseNow"),
+          "Your purchase is being processed. It will unlock automatically once confirmed.",
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        t("purchaseNow"),
+        error instanceof Error
+          ? error.message
+          : "Something went wrong with the purchase. Please try again.",
+      );
     } finally {
       setIsPurchasing(false);
     }
@@ -108,8 +124,8 @@ export default function HomeScreen() {
     const loadProduct = async () => {
       try {
         const product = await getPremiumProduct();
-        if (!cancelled && product?.localizedPrice) {
-          setPremiumPriceLabel(product.localizedPrice);
+        if (!cancelled && product?.displayPrice) {
+          setPremiumPriceLabel(product.displayPrice);
         }
       } catch (error) {
         console.warn("Failed loading Play product", error);
